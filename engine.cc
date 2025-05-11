@@ -1,5 +1,5 @@
-#include "ini_configuration.h"
-#include "Process.h"
+#include "src/ini_configuration.h"
+#include "src/Process.h"
 
 #include <fstream>
 #include <iostream>
