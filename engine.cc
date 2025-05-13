@@ -8,6 +8,8 @@
 #include <vector>
 #include <stack>
 
+#include "src/Conf_Reader.h"
+
 using namespace std;
 
 bool areBracketsBalanced(const string& str) {
@@ -71,22 +73,12 @@ int main(int argc, char const* argv[])
                 retVal = 1;
                 continue;
             }
+            // read the configuration and create groups for processing
+            pair<std::vector<Group *>, int> conf_pair = Conf_Reader::read_conf(conf);
+            // break the answer into parts
+            vector<Group*> groups = conf_pair.first;
+            retVal = conf_pair.second;
 
-            vector<Group*> groups = {};
-            for(int i = 0; i < 4; i++){
-                string groupName = "groep" + to_string(i);
-                string RE = conf[groupName]["RE"].as_string_or_die();
-                string color = conf[groupName]["color"].as_string_or_die();
-                int fontWeight = conf[groupName]["fontWeight"].as_int_or_die();
-                if (!areBracketsBalanced(RE)) {
-                    cerr << "Error: unbalanced brackets in RE for group: " << groupName << endl;
-                    retVal = 1;
-                    continue;
-                }
-
-                Group* group = new Group(groupName, RE, color, fontWeight);
-                groups.push_back(group);
-            }
             Process process(groups, "input.txt");
         }
     }
