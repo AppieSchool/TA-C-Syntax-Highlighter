@@ -11,66 +11,67 @@
 using namespace std;
 
 Process::Process(vector<Group *> groups, string inputFileName) : groups(std::move(groups)) {
-    cout << "[INFO] Starting Process constructor..." << endl;
+    Logger::log(LogLevel::INFO, "Starting Process constructor...");
 
     ifstream inputFile(inputFileName);
     if (!inputFile) {
-        cerr << "[ERROR] Unable to open input file: " << inputFileName << endl;
+        Logger::log(LogLevel::ERROR, "Unable to open input file: " + inputFileName);
         return;
     } else {
-        cout << "[INFO] Successfully opened input file: " << inputFileName << endl;
+        Logger::log(LogLevel::INFO, "Successfully opened input file: " + inputFileName);
     }
 
     HTMLWriter output("output.html");
-    cout << "[INFO] Initialized HTMLWriter for output.html" << endl;
+    Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
     vector<ENFA> enfas;
-    cout << "[INFO] Processing groups..." << endl;
+    Logger::log(LogLevel::INFO, "Processing groups...");
     for (auto group : getGroups()) {
-        cout << "[INFO] Processing group: " << group->getName() << endl;
+        Logger::log(LogLevel::INFO, "Processing group: " + group->getName());
 
         if (group->getRegex().empty()) {
-            cerr << "[WARNING] No regex for group " << group->getName() << endl;
+            Logger::log(LogLevel::WARNING, "No regex for group: " + group->getName());
             continue;
         }
 
-        cout << "[INFO] Converting regex to ENFA for group: " << group->getName() << endl;
+        Logger::log(LogLevel::INFO, "Converting regex to ENFA for group: " + group->getName());
         RE GroupRegex(group->getRegex());
         ENFA GroupNFA = GroupRegex.toENFA();
         enfas.push_back(GroupNFA);
     }
 
-    cout << "[INFO] Reading input file and tokenizing words..." << endl;
+    Logger::log(LogLevel::INFO, "Reading input file and tokenizing words...");
     string line;
     vector<vector<string>> lines;
     while (getline(inputFile, line)) {
-        cout << "[DEBUG] Read line: " << line << endl;
+        Logger::log(LogLevel::DEBUG, "Read line: " + line);
 
         vector<string> words;
         istringstream stream(line);
         string word;
         while (stream >> word) {
-            cout << "[DEBUG] Tokenized word: " << word << endl;
+            Logger::log(LogLevel::DEBUG, "Tokenized word: " + word);
             words.push_back(word);
         }
         lines.push_back(words);
     }
     inputFile.close();
-    cout << "[INFO] Finished reading input file." << endl;
+    Logger::log(LogLevel::INFO, "Finished reading input file.");
 
-    cout << "[INFO] Processing words..." << endl;
+
+    Logger::log(LogLevel::INFO, "Processing words...");
     for (const auto& line : lines) {
         for (const auto& word : line) {
-            cout << "[DEBUG] Checking word: " << word << endl;
+            Logger::log(LogLevel::DEBUG, "Checking word: " + word);
             bool isAccepted = false;
             Group* g = nullptr;
 
             for (size_t index = 0; index < enfas.size(); index++) {
                 g = getGroups()[index];
 
-                cout << "[DEBUG] Checking if ENFA accepts word: " << word << " for group " << g->getName() << endl;
+                Logger::log(LogLevel::DEBUG, "Checking if ENFA accepts word: " + word + " for group: " + g->getName());
                 if (enfas[index].accepts(word)) {
-                    cout << "[INFO] Word '" << word << "' accepted by group: " << g->getName() << endl;
+                    Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;
                     break;
                 }
@@ -78,22 +79,22 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
 
             if (g) {
                 if (isAccepted) {
-                    cout << "[SUCCESS] Writing styled text: " << word << endl;
+                    Logger::log(LogLevel::SUCCESS, "Writing styled text: " + word);
                     output.writeStyledText(word, g->getColor(), g->getFontWeight());
                 } else {
-                    cout << "[INFO] Writing plain text: " << word << endl;
+                    Logger::log(LogLevel::INFO, "Writing plain text: " + word);
                     output.writePlainText(word);
                 }
             } else {
-                cerr << "[ERROR] No valid group found for word: " << word << endl;
+                Logger::log(LogLevel::ERROR, "No valid group found for word: " + word);
             }
         }
         output.addNewline();
     }
 
-    cout << "[INFO] Saving HTML file..." << endl;
+    Logger::log(LogLevel::INFO, "Saving HTML file...");
     output.saveFile();
-    cout << "[SUCCESS] HTML file 'output.html' saved successfully!" << endl;
+    Logger::log(LogLevel::SUCCESS, "HTML file 'output.html' saved successfully!");
 }
 
 const vector<Group *> &Process::getGroups() const {

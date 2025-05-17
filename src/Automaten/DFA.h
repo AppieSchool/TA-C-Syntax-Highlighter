@@ -10,6 +10,7 @@
 
 #include "json.hpp"
 #include "Table.h"
+#include "State.h"
 
 
 using json = nlohmann::json;
@@ -26,6 +27,8 @@ class DFA {
     std::string filename;
 public:
     DFA(std::string filename);
+
+    DFA(const json& j);
 
     DFA(const std::vector<std::string> &alphabet, const std::string &initialState,
         const std::vector<std::string> &acceptingStates,

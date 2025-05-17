@@ -70,6 +70,22 @@ DFA::DFA(std::string filename) {
     }
 }
 
+DFA::DFA(const json& j) {
+    for (const auto &symbol: j["alphabet"]) {
+        alphabet_.push_back(symbol);
+    }
+
+    for (const auto &state: j["states"]) {
+        if (state["starting"])
+            initialState_ = state["name"];
+        if (state["accepting"])
+            acceptingStates_.push_back(state["name"]);
+    }
+    for (const auto &transition: j["transitions"]) {
+        transitions_[transition["from"]][transition["input"]] = transition["to"];
+    }
+}
+
 DFA::~DFA() {
 
 }
@@ -513,9 +529,6 @@ State *DFA::findName(vector<State> &states, const string &name) {
     return nullptr;
 }
 
-RE DFA::toRE() {
-    // TODO: write a converter from DFA to RE
-}
 
 State* DFA::findName(const std::string& name) {
 
@@ -665,8 +678,8 @@ string DFA::unionRegex(const string& r1, const string& r2) {
     }
 
 }
-/*
-regex DFA::toRE() {
+
+RE DFA::toRE() {
     ifstream input(filename);
     json j;
     input >> j;
@@ -717,7 +730,6 @@ regex DFA::toRE() {
             }
         }
     }
-    RE r = Regex(finalRegex);
+    RE r = RE(finalRegex);
     return r;
 }
-*/

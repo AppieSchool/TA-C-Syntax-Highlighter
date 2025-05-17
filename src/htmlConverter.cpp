@@ -3,7 +3,7 @@
 #include <sstream>
 
 HTMLWriter::HTMLWriter(const std::string &filename) : filename(filename) {
-    std::cout << "[INFO] Initializing HTMLWriter with file: " << this->filename << std::endl;
+    Logger::log(LogLevel::INFO, "Initializing HTMLWriter with file: " + filename);
     htmlContent = "<html><head><title>C++ Code Syntax Highlighting</title><style>"
                   "body { font-family: Arial, sans-serif; margin: 20px; }"
                   "h1 { color: #333; text-align: center; }"
@@ -16,23 +16,20 @@ HTMLWriter::HTMLWriter(const std::string &filename) : filename(filename) {
 }
 
 HTMLWriter::~HTMLWriter() {
-    std::cout << "[INFO] Closing HTMLWriter..." << std::endl;
+    Logger::log(LogLevel::INFO, "Closing HTMLWriter and saving file: " + filename);
     if (file.is_open()) {
-        std::cout << "[INFO] Closing file: " << filename << std::endl;
         file.close();
     }
 }
 
 void HTMLWriter::writePlainText(const std::string &text) {
-    std::cout << "[DEBUG] Writing plain text: " << text << std::endl;
+    Logger::log(LogLevel::DEBUG, "Writing plain text: " + text);
     std::string escapedText = escapeHTML(text);
     htmlContent += escapedText + " ";  // Add a space after each word to avoid word break issues
 }
 
 void HTMLWriter::writeStyledText(const std::string &text, const std::string &hexColorCode, int fontWeight) {
-    std::cout << "[DEBUG] Writing styled text: " << text
-              << " | Color: " << hexColorCode
-              << " | Font Weight: " << fontWeight << std::endl;
+    Logger::log(LogLevel::DEBUG, "Writing styled text: " + text + " | Color: " + hexColorCode + " | Font Weight: " + std::to_string(fontWeight));
 
     std::string escapedText = escapeHTML(text);
     htmlContent += "<span style=\"color:" + hexColorCode +
@@ -41,12 +38,12 @@ void HTMLWriter::writeStyledText(const std::string &text, const std::string &hex
 }
 
 void HTMLWriter::addNewline() {
-    std::cout << "[DEBUG] Adding newline to HTML output." << std::endl;
+    Logger::log(LogLevel::DEBUG, "Adding newline to HTML output.");
     htmlContent += "<br>";
 }
 
 void HTMLWriter::saveFile() {
-    std::cout << "[INFO] Saving HTML file: " << filename << std::endl;
+    Logger::log(LogLevel::INFO, "Saving HTML file: " + filename);
 
     // Add a header and some introduction text
     htmlContent += "<h1>C++ Code Syntax Highlighting</h1>";
@@ -64,19 +61,20 @@ void HTMLWriter::saveFile() {
     htmlContent += "</body></html>";
 
     // Print the full content before saving
-    std::cout << "========== HTML CONTENT BEFORE SAVING ==========" << std::endl;
-    std::cout << htmlContent << std::endl;
-    std::cout << "================================================" << std::endl;
+    std::string content = "========== HTML CONTENT BEFORE SAVING ==========";
+    content += htmlContent;
+    content += "================================================";
+    Logger::log(LogLevel::INFO, content);
 
     // Open the file for writing (no "../" to ensure it's saved in the current directory)
     file.open(filename);
     if (file.is_open()) {
         // Write the full content to the file
         file << htmlContent;
-        std::cout << "[SUCCESS] HTML file saved successfully: " << filename << std::endl;
+        Logger::log(LogLevel::SUCCESS, "HTML file saved successfully: " + filename);
         file.close();  // Ensure the file is properly closed after writing
     } else {
-        std::cerr << "[ERROR] Could not open file for writing: " << filename << std::endl;
+        Logger::log(LogLevel::ERROR, "Could not open file for writing: " + filename);
     }
 }
 

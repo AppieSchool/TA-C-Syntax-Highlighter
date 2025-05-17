@@ -74,8 +74,85 @@ std::vector<ENFA_state *> ENFA_state::get_nextStates(std::string input) {
     return result;
 }
 
+
+std::string DFA_state::getName() {
+    return name;
+}
+
+bool DFA_state::getisEndState() const {
+    return endState;
+}
+
+bool DFA_state::getisBeginState() const {
+    return beginState;
+}
+
+void DFA_state::setName(std::string named) {
+    name = named;
+}
+
+void DFA_state::setEndState(bool isEndState) {
+    endState = isEndState;
+}
+
+void DFA_state::setBeginState(bool isBeginState) {
+    beginState = isBeginState;
+}
+
+void DFA_state::addTransition(std::string inputSymbol, DFA_state *nextState) {
+    transitie[inputSymbol] = nextState;
+
+    if (regx_transitie.count(nextState) > 0) {
+        std::string inputstring = regx_transitie[nextState] + "+" + inputSymbol;
+        SortString(inputstring);
+        regx_transitie[nextState] = inputstring;
+    } else {
+        regx_transitie[nextState] = inputSymbol;
+    }
+}
+
+void DFA_state::SortString(std::string &str) {
+    std::vector<char> chars;
+    for (char c : str) {
+        if (c != '+') {
+            chars.push_back(c);
+        }
+    }
+
+    std::sort(chars.begin(), chars.end());
+
+    str = "";
+    for (size_t i = 0; i < chars.size(); ++i) {
+        str += chars[i];
+        if (i != chars.size() - 1) {
+            str += "+";
+        }
+    }
+}
+
+std::map<DFA_state*, std::string> DFA_state::getTransitions() {
+    return regx_transitie;
+}
+
+DFA_state* DFA_state::volgendeState(std::string input) {
+    auto it = transitie.find(input);
+    if (it != transitie.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+
 // ENFA function implementations
 ENFA::ENFA() {}
+
+ENFA::~ENFA(){
+    for (ENFA_state* state : states) {
+        delete state;
+    }
+    states.clear();
+
+}
 
 
 
@@ -227,11 +304,18 @@ bool ENFA::accepts(const std::string& inputString) {
 
 // TODO Add a standard constructor for the DFA class
 // TODO Write the DFA_state class, or replace the type with another
-/*
+
 DFA ENFA::toDFA() {
-    DFA dfa;
-    dfa.alphabet = this->alphabet;
-    dfa.name = "DFA";
+    json DFA_JSON;
+    DFA_JSON["type"] = "DFA";
+    DFA_JSON["alphabet"] = this->alphabet;
+
+    DFA_JSON["states"] = json::array();
+    DFA_JSON["transitions"] = json::array();
+
+    std::vector<DFA_state*> dfaStates;
+
+
     std::map<std::set<ENFA_state*>, DFA_state*> stateMap;
     queue<std::set<ENFA_state*>> stateQueue;
 
@@ -246,7 +330,7 @@ DFA ENFA::toDFA() {
         if (stateMap.count(nfaStates) == 0) {
             dfaState = make_DFA_state(nfaStates);
             stateMap[nfaStates] = dfaState;
-            dfa.states.push_back(dfaState);
+            dfaStates.push_back(dfaState);
         } else {
             dfaState = stateMap[nfaStates];
         }
@@ -265,7 +349,7 @@ DFA ENFA::toDFA() {
             if (stateMap.count(newNFAStatesSet) == 0) {
                 newDFAState = make_DFA_state(newNFAStatesSet);
                 stateMap[newNFAStatesSet] = newDFAState;
-                dfa.states.push_back(newDFAState);
+                dfaStates.push_back(newDFAState);
                 stateQueue.push(newNFAStatesSet);
             } else {
                 newDFAState = stateMap[newNFAStatesSet];
@@ -276,11 +360,35 @@ DFA ENFA::toDFA() {
     }
 
     auto *beginstate_DFA = stateMap[startState];
-    dfa.beginstate = beginstate_DFA;
     beginstate_DFA->setBeginState(true);
-    return dfa;
+
+    for (int i = 0; i < dfaStates.size(); i++) {
+        json state;
+        state["name"] = dfaStates[i]->getName();
+        state["accepting"] = dfaStates[i]->getisEndState();
+        state["starting"] = dfaStates[i]->getisBeginState();
+        DFA_JSON["states"].push_back(state);
+    }
+
+    for (int i = 0; i < states.size(); ++i) {
+        for (int j = 0; j < alphabet.size(); ++j) {
+            char input = alphabet[j][0];
+            json transition;
+            string input_string = string(1, input);
+            transition["from"] = dfaStates[i]->getName();
+            transition["to"] = dfaStates[i]->volgendeState(input_string)->getName();
+            transition["input"] = alphabet[j];
+            DFA_JSON["transitions"].push_back(transition);
+        }
+    }
+
+    for (DFA_state* state : dfaStates) {
+        delete state;
+    }
+
+    return DFA(DFA_JSON);
 }
-*/
+
 std::set<ENFA_state *> ENFA::epsilonClosure(ENFA_state* state) {
     std::set<ENFA_state *> closure;
     std::queue<ENFA_state *> queue;
@@ -303,7 +411,7 @@ std::set<ENFA_state *> ENFA::epsilonClosure(ENFA_state* state) {
     return closure;
 }
 
-/*
+
 DFA_state* ENFA::make_DFA_state(const std::set<ENFA_state*>& states_set) {
     auto * newDFAstate = new DFA_state();
     std::set<string> DFA_state_names;
@@ -331,4 +439,3 @@ DFA_state* ENFA::make_DFA_state(const std::set<ENFA_state*>& states_set) {
     newDFAstate->setName(name_state);
     return newDFAstate;
 }
-*/

@@ -6,8 +6,8 @@
 #include <set>
 #include <fstream>
 #include "State.h"
+#include "DFA.h"
 class State;
-class DFA;
 // ENFA_state class declaration
 class ENFA_state {
     std::multimap<std::string, ENFA_state *> transitions;
@@ -37,6 +37,30 @@ public:
     void set_e_closure(std::vector<ENFA_state *> e_closure);
 };
 
+class DFA_state {
+private:
+    bool endState = false;
+    bool beginState = false;
+    std::string name;
+    std::map<DFA_state*, std::string> regx_transitie;
+    std::map<std::string, DFA_state*> transitie;
+
+    void SortString(std::string &str);
+
+public:
+    std::string getName();
+    bool getisEndState() const;
+    bool getisBeginState() const;
+    void setName(std::string named);
+    void setEndState(bool isEndState);
+    void setBeginState(bool isBeginState);
+    void addTransition(std::string inputSymbol, DFA_state *nextState);
+    std::map<DFA_state*, std::string> getTransitions();
+    DFA_state* volgendeState(std::string input);
+};
+
+
+
 // ENFA class declaration
 class ENFA {
 private:
@@ -51,6 +75,7 @@ private:
 public:
     ENFA();
     explicit ENFA(std::string filename);
+    ~ENFA();
     DFA toDFA();
 
     void add_state(ENFA_state *state);
@@ -66,10 +91,7 @@ public:
 
     std::set<ENFA_state*> epsilonClosure( ENFA_state* state);
 
-    //
-    /*
-    State* make_DFA_state(const std::set<ENFA_state*>& states);
-    */
+    DFA_state* make_DFA_state(const std::set<ENFA_state*>& states_set);
 
     void printStats();
 

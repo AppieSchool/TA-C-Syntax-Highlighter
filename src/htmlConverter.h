@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <string>
+#include "Utils/Logger.h"
 
 class HTMLWriter {
 public:

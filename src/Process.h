@@ -4,12 +4,13 @@
 #include <string>
 
 #include "ENFA.h"
-
+#include "Utils/Logger.h"
 #include "Group.h"
 
 using namespace std;
 
 class Process {
+private:
     vector<Group*> groups;
     string regex;
 public:
