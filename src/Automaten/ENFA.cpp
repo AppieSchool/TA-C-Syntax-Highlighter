@@ -146,15 +146,6 @@ DFA_state* DFA_state::volgendeState(std::string input) {
 // ENFA function implementations
 ENFA::ENFA() {}
 
-ENFA::~ENFA(){
-    for (ENFA_state* state : states) {
-        delete state;
-    }
-    states.clear();
-
-}
-
-
 
 ENFA::ENFA(std::string filename) : file(filename) {
     std::ifstream input(filename);
@@ -301,9 +292,6 @@ bool ENFA::accepts(const std::string& inputString) {
     }
     return false;
 }
-
-// TODO Add a standard constructor for the DFA class
-// TODO Write the DFA_state class, or replace the type with another
 
 DFA ENFA::toDFA() {
     json DFA_JSON;

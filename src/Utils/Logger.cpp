@@ -8,7 +8,7 @@
 void Logger::log(LogLevel level, const std::string& message) {
     // Check if DEBUG_MODE is enabled
     // Only print ERROR messages if DEBUG_MODE is off
-    if (level != LogLevel::ERROR && !DEBUG_MODE) {
+    if (level != LogLevel::ERROR && !DEBUG_MODE && level != LogLevel::WARNING) {
         return;
     }
     switch (level) {

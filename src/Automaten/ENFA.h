@@ -75,7 +75,6 @@ private:
 public:
     ENFA();
     explicit ENFA(std::string filename);
-    ~ENFA();
     DFA toDFA();
 
     void add_state(ENFA_state *state);
