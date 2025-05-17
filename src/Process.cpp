@@ -24,7 +24,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
     HTMLWriter output("output.html");
     Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
-    vector<ENFA> enfas;
+    vector<DFA> dfas;
     Logger::log(LogLevel::INFO, "Processing groups...");
     for (auto group : getGroups()) {
         Logger::log(LogLevel::INFO, "Processing group: " + group->getName());
@@ -37,7 +37,10 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         Logger::log(LogLevel::INFO, "Converting regex to ENFA for group: " + group->getName());
         RE GroupRegex(group->getRegex());
         ENFA GroupNFA = GroupRegex.toENFA();
-        enfas.push_back(GroupNFA);
+        DFA GroupDFA = GroupNFA.toDFA();
+        // TODO: Fix the minimization process IT DOES NOT WORK
+        //GroupDFA.minimize();
+        dfas.push_back(GroupDFA);
     }
 
     Logger::log(LogLevel::INFO, "Reading input file and tokenizing words...");
@@ -66,11 +69,11 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
             bool isAccepted = false;
             Group* g = nullptr;
 
-            for (size_t index = 0; index < enfas.size(); index++) {
+            for (size_t index = 0; index < dfas.size(); index++) {
                 g = getGroups()[index];
 
                 Logger::log(LogLevel::DEBUG, "Checking if ENFA accepts word: " + word + " for group: " + g->getName());
-                if (enfas[index].accepts(word)) {
+                if (dfas[index].accepts(word)) {
                     Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;
                     break;
@@ -86,7 +89,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
                     output.writePlainText(word);
                 }
             } else {
-                Logger::log(LogLevel::ERROR, "No valid group found for word: " + word);
+                Logger::log(LogLevel::WARNING, "No valid group found for word: " + word);
             }
         }
         output.addNewline();

@@ -6,75 +6,46 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-// ENFA_state function implementations
+// ENFA_state implementations
 ENFA_state::ENFA_state() {}
 
+ENFA_state::ENFA_state(std::string name, bool is_final, bool is_start)
+        : name(std::move(name)), is_final(is_final), is_start(is_start) {}
 
-ENFA_state::ENFA_state(std::string name, bool is_final, bool is_start) {
-    this->name = name;
-    this->is_final = is_final;
-    this->is_start = is_start;
+bool ENFA_state::is_final_state() { return is_final; }
+bool ENFA_state::is_start_state() { return is_start; }
+void ENFA_state::set_name(std::string name) { this->name = std::move(name); }
+std::string ENFA_state::get_name() { return name; }
+void ENFA_state::set_start(bool is_start) { this->is_start = is_start; }
+void ENFA_state::set_final(bool is_final) { this->is_final = is_final; }
+
+void ENFA_state::add_transition(std::string input, std::shared_ptr<ENFA_state> state) {
+    transitions.insert({input, state});
 }
 
-
-
-bool ENFA_state::is_final_state() {
-    return is_final;
-}
-
-bool ENFA_state::is_start_state() {
-    return is_start;
-}
-
-void ENFA_state::set_name(std::string name) {
-    this->name = name;
-}
-
-std::string ENFA_state::get_name() {
-    return name;
-}
-
-void ENFA_state::set_start(bool is_start) {
-    this->is_start = is_start;
-}
-
-void ENFA_state::set_final(bool is_final) {
-    this->is_final = is_final;
-}
-
-void ENFA_state::add_transition(std::string input, ENFA_state *state) {
-    transitions.insert(std::make_pair(input, state));
-}
-
-std::multimap<std::string, ENFA_state *> ENFA_state::get_alltransitions() {
-    if (this == nullptr) {
-        throw std::runtime_error("Attempted to call get_alltransitions on a null ENFA_state pointer");
-    }
+std::multimap<std::string, std::shared_ptr<ENFA_state>> ENFA_state::get_alltransitions() {
     return transitions;
 }
 
-std::vector<ENFA_state *> ENFA_state::get_e_closure() {
+std::vector<std::shared_ptr<ENFA_state>> ENFA_state::get_e_closure() {
     return e_closure;
 }
 
-void ENFA_state::set_e_closure(std::vector<ENFA_state *> e_closure) {
-    this->e_closure = e_closure;
+void ENFA_state::set_e_closure(std::vector<std::shared_ptr<ENFA_state>> closure) {
+    e_closure = std::move(closure);
 }
 
-std::vector<ENFA_state *> ENFA_state::get_nextStates(std::string input) {
-    std::vector<ENFA_state *> result;
-    for (auto transition : get_alltransitions()) {
-        if(transition.first == input) {
-            ENFA_state* next_state = transition.second;
-            if(next_state != nullptr) {
-                result.push_back(next_state);
-            }
+std::vector<std::shared_ptr<ENFA_state>> ENFA_state::get_nextStates(std::string input) {
+    std::vector<std::shared_ptr<ENFA_state>> result;
+    for (auto& [key, state] : transitions) {
+        if (key == input && state) {
+            result.push_back(state);
         }
     }
     return result;
 }
 
-
+// DFA_state implementations
 std::string DFA_state::getName() {
     return name;
 }
@@ -99,7 +70,7 @@ void DFA_state::setBeginState(bool isBeginState) {
     beginState = isBeginState;
 }
 
-void DFA_state::addTransition(std::string inputSymbol, DFA_state *nextState) {
+void DFA_state::addTransition(std::string inputSymbol, std::shared_ptr<DFA_state> nextState) {
     transitie[inputSymbol] = nextState;
 
     if (regx_transitie.count(nextState) > 0) {
@@ -109,6 +80,10 @@ void DFA_state::addTransition(std::string inputSymbol, DFA_state *nextState) {
     } else {
         regx_transitie[nextState] = inputSymbol;
     }
+}
+
+std::map<std::string, std::shared_ptr<DFA_state>> DFA_state::getSymbolTransitions() const {
+    return transitie;
 }
 
 void DFA_state::SortString(std::string &str) {
@@ -130,11 +105,11 @@ void DFA_state::SortString(std::string &str) {
     }
 }
 
-std::map<DFA_state*, std::string> DFA_state::getTransitions() {
+std::map<std::shared_ptr<DFA_state>, std::string> DFA_state::getTransitions() {
     return regx_transitie;
 }
 
-DFA_state* DFA_state::volgendeState(std::string input) {
+std::shared_ptr<DFA_state> DFA_state::volgendeState(std::string input) {
     auto it = transitie.find(input);
     if (it != transitie.end()) {
         return it->second;
@@ -162,13 +137,13 @@ ENFA::ENFA(std::string filename) : file(filename) {
 
     eps = j["eps"];
 
-    std::unordered_map<std::string, ENFA_state*> state_map;
+    std::unordered_map<std::string, std::shared_ptr<ENFA_state>> state_map;
     for (const auto &state_json : j["states"]) {
         std::string name = state_json["name"];
         bool accepting = state_json["accepting"];
         bool starting = state_json["starting"];
 
-        ENFA_state* state = new ENFA_state(name, accepting, starting);
+        std::shared_ptr<ENFA_state> state = make_shared<ENFA_state>(ENFA_state(name, accepting, starting));
         states.push_back(state);
         state_map[name] = state;
 
@@ -183,8 +158,8 @@ ENFA::ENFA(std::string filename) : file(filename) {
         std::string to_name = transition["to"];
         std::string input = transition["input"];
 
-        ENFA_state* from_state = state_map[from_name];
-        ENFA_state* to_state = state_map[to_name];
+        std::shared_ptr<ENFA_state> from_state = state_map[from_name];
+        std::shared_ptr<ENFA_state> to_state = state_map[to_name];
 
         from_state->add_transition(input, to_state);
     }
@@ -193,7 +168,7 @@ ENFA::ENFA(std::string filename) : file(filename) {
 
 
 
-void ENFA::add_state(ENFA_state *state) {
+void ENFA::add_state(std::shared_ptr<ENFA_state> state) {
     states.push_back(state);
 }
 
@@ -205,23 +180,23 @@ std::string ENFA::get_eps() {
     return eps;
 }
 
-void ENFA::set_start(ENFA_state *state) {
+void ENFA::set_start(std::shared_ptr<ENFA_state> state) {
     start_state = state;
 }
 
-void ENFA::add_final_state(ENFA_state *state) {
+void ENFA::add_final_state(std::shared_ptr<ENFA_state> state) {
     final_states.push_back(state);
 }
 
-ENFA_state* ENFA::get_start_state() {
+std::shared_ptr<ENFA_state> ENFA::get_start_state() {
     return start_state;
 }
 
-std::vector<ENFA_state *> ENFA::get_final_states() {
+std::vector<std::shared_ptr<ENFA_state>> ENFA::get_final_states() {
     return final_states;
 }
 
-std::vector<ENFA_state *> ENFA::get_states() {
+std::vector<std::shared_ptr<ENFA_state>> ENFA::get_states() {
     return states;
 }
 
@@ -233,7 +208,7 @@ void ENFA::printStats() {
     std::cout << "no_of_states=" << this->states.size() << std::endl;
     int eps_counter = 0;
 
-    for (ENFA_state* state : states) {
+    for (std::shared_ptr<ENFA_state> state : states) {
         for (auto transition : state->get_alltransitions()) {
             if (transition.first == eps) {
                 eps_counter++;
@@ -249,7 +224,7 @@ void ENFA::printStats() {
     // Now iterate over the sorted alphabet vector
     for (const std::string& alpha : this->alphabet) {
         int counter = 0;
-        for (ENFA_state* state : states) {
+        for (std::shared_ptr<ENFA_state> state : states) {
             for (auto transition : state->get_alltransitions()) {
                 if (transition.first == alpha) {
                     counter++;
@@ -261,7 +236,7 @@ void ENFA::printStats() {
 
     std::map<int, int> degree_map;
 
-    for (ENFA_state* state : states) {
+    for (std::shared_ptr<ENFA_state> state : states) {
         int degree = state->get_alltransitions().size();
         degree_map[degree]++;
     }
@@ -272,20 +247,20 @@ void ENFA::printStats() {
 }
 
 bool ENFA::accepts(const std::string& inputString) {
-    std::set<ENFA_state*> currentState = epsilonClosure(start_state);
+    std::set<std::shared_ptr<ENFA_state>> currentState = epsilonClosure(start_state);
     for (char input : inputString) {
         std::string inputStr = std::string(1, input);
-        std::set<ENFA_state*> newStates;
-        for (ENFA_state* state : currentState) {
-            std::vector<ENFA_state*> nextStates = state->get_nextStates(inputStr);
-            for (ENFA_state* nextState : nextStates) {
-                std::set<ENFA_state*> epsilonClosureSet = epsilonClosure(nextState);
+        std::set<std::shared_ptr<ENFA_state>> newStates;
+        for (std::shared_ptr<ENFA_state> state : currentState) {
+            std::vector<std::shared_ptr<ENFA_state>> nextStates = state->get_nextStates(inputStr);
+            for (std::shared_ptr<ENFA_state> nextState : nextStates) {
+                std::set<std::shared_ptr<ENFA_state>> epsilonClosureSet = epsilonClosure(nextState);
                 newStates.insert(epsilonClosureSet.begin(), epsilonClosureSet.end());
             }
         }
         currentState = newStates;
     }
-    for (ENFA_state* state : currentState) {
+    for (std::shared_ptr<ENFA_state> state : currentState) {
         if (state->is_final_state()) {
             return true;
         }
@@ -294,27 +269,19 @@ bool ENFA::accepts(const std::string& inputString) {
 }
 
 DFA ENFA::toDFA() {
-    json DFA_JSON;
-    DFA_JSON["type"] = "DFA";
-    DFA_JSON["alphabet"] = this->alphabet;
+    std::vector<std::shared_ptr<DFA_state>> dfaStates;
 
-    DFA_JSON["states"] = json::array();
-    DFA_JSON["transitions"] = json::array();
+    std::map<std::set<std::shared_ptr<ENFA_state>>, std::shared_ptr<DFA_state>> stateMap;
+    std::queue<std::set<std::shared_ptr<ENFA_state>>> stateQueue;
 
-    std::vector<DFA_state*> dfaStates;
-
-
-    std::map<std::set<ENFA_state*>, DFA_state*> stateMap;
-    queue<std::set<ENFA_state*>> stateQueue;
-
-    std::set<ENFA_state*> startState = epsilonClosure(start_state);
+    std::set<std::shared_ptr<ENFA_state>> startState = epsilonClosure(start_state);
     stateQueue.push(startState);
 
     while (!stateQueue.empty()) {
-        std::set<ENFA_state*> nfaStates = stateQueue.front();
+        std::set<std::shared_ptr<ENFA_state>> nfaStates = stateQueue.front();
         stateQueue.pop();
 
-        DFA_state* dfaState;
+        std::shared_ptr<DFA_state> dfaState;
         if (stateMap.count(nfaStates) == 0) {
             dfaState = make_DFA_state(nfaStates);
             stateMap[nfaStates] = dfaState;
@@ -323,17 +290,17 @@ DFA ENFA::toDFA() {
             dfaState = stateMap[nfaStates];
         }
 
-        for (const std::string& symbol : alphabet) {
-            std::set<ENFA_state*> newNFAStatesSet;
-            for (ENFA_state* nfaState : nfaStates) {
-                std::vector<ENFA_state*> nextStates = nfaState->get_nextStates(symbol);
-                for (ENFA_state* nextState : nextStates) {
-                    std::set<ENFA_state*> epsilonClosureSet = epsilonClosure(nextState);
+        for (const std::string &symbol: alphabet) {
+            std::set<std::shared_ptr<ENFA_state>> newNFAStatesSet;
+            for (std::shared_ptr<ENFA_state> nfaState: nfaStates) {
+                std::vector<std::shared_ptr<ENFA_state>> nextStates = nfaState->get_nextStates(symbol);
+                for (std::shared_ptr<ENFA_state> nextState: nextStates) {
+                    std::set<std::shared_ptr<ENFA_state>> epsilonClosureSet = epsilonClosure(nextState);
                     newNFAStatesSet.insert(epsilonClosureSet.begin(), epsilonClosureSet.end());
                 }
             }
 
-            DFA_state* newDFAState;
+            std::shared_ptr<DFA_state> newDFAState;
             if (stateMap.count(newNFAStatesSet) == 0) {
                 newDFAState = make_DFA_state(newNFAStatesSet);
                 stateMap[newNFAStatesSet] = newDFAState;
@@ -347,48 +314,41 @@ DFA ENFA::toDFA() {
         }
     }
 
-    auto *beginstate_DFA = stateMap[startState];
+    auto beginstate_DFA = stateMap[startState];
     beginstate_DFA->setBeginState(true);
 
-    for (int i = 0; i < dfaStates.size(); i++) {
-        json state;
-        state["name"] = dfaStates[i]->getName();
-        state["accepting"] = dfaStates[i]->getisEndState();
-        state["starting"] = dfaStates[i]->getisBeginState();
-        DFA_JSON["states"].push_back(state);
-    }
+    // Prepare data for the DFA constructor
+    std::vector<std::string> acceptingStateNames;
+    std::map<std::string, std::map<std::string, std::string>> transitionMap;
+    std::string initialStateName = beginstate_DFA->getName(); // from earlier
 
-    for (int i = 0; i < states.size(); ++i) {
-        for (int j = 0; j < alphabet.size(); ++j) {
-            char input = alphabet[j][0];
-            json transition;
-            string input_string = string(1, input);
-            transition["from"] = dfaStates[i]->getName();
-            transition["to"] = dfaStates[i]->volgendeState(input_string)->getName();
-            transition["input"] = alphabet[j];
-            DFA_JSON["transitions"].push_back(transition);
+    for (const auto &dfaState: dfaStates) {
+        std::string stateName = dfaState->getName();
+        if (dfaState->getisEndState()) {
+            acceptingStateNames.push_back(stateName);
+        }
+
+        for (auto &pair: dfaState->getSymbolTransitions()) {
+            const auto &input = pair.first;
+            const auto &nextState = pair.second;
+            transitionMap[stateName][input] = nextState->getName();
         }
     }
-
-    for (DFA_state* state : dfaStates) {
-        delete state;
-    }
-
-    return DFA(DFA_JSON);
+    return DFA(alphabet, initialStateName, acceptingStateNames, transitionMap);
 }
 
-std::set<ENFA_state *> ENFA::epsilonClosure(ENFA_state* state) {
-    std::set<ENFA_state *> closure;
-    std::queue<ENFA_state *> queue;
+std::set<std::shared_ptr<ENFA_state>> ENFA::epsilonClosure(std::shared_ptr<ENFA_state> state) {
+    std::set<std::shared_ptr<ENFA_state>> closure;
+    std::queue<std::shared_ptr<ENFA_state>> queue;
 
     queue.push(state);
     closure.insert(state);
 
     while (!queue.empty()) {
-        ENFA_state* current = queue.front();
+        std::shared_ptr<ENFA_state> current = queue.front();
         queue.pop();
-        std::vector<ENFA_state *> nextStates = current->get_nextStates(eps);
-        for (ENFA_state* nextState : nextStates) {
+        std::vector<std::shared_ptr<ENFA_state>> nextStates = current->get_nextStates(eps);
+        for (std::shared_ptr<ENFA_state> nextState : nextStates) {
             if (closure.find(nextState) == closure.end()) {
                 closure.insert(nextState);
                 queue.push(nextState);
@@ -400,15 +360,15 @@ std::set<ENFA_state *> ENFA::epsilonClosure(ENFA_state* state) {
 }
 
 
-DFA_state* ENFA::make_DFA_state(const std::set<ENFA_state*>& states_set) {
-    auto * newDFAstate = new DFA_state();
+std::shared_ptr<DFA_state> ENFA::make_DFA_state(const std::set<std::shared_ptr<ENFA_state>>& states_set) {
+    auto newDFAstate = make_shared<DFA_state>(DFA_state());
     std::set<string> DFA_state_names;
     if (states_set.empty()){
         newDFAstate->setName("{}");
         return newDFAstate;
     }
 
-    for (ENFA_state* state : states_set){
+    for (std::shared_ptr<ENFA_state> state : states_set){
         if(state->is_final_state()){
             newDFAstate->setEndState(true);
         }

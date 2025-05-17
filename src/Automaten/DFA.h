@@ -28,8 +28,6 @@ class DFA {
 public:
     DFA(std::string filename);
 
-    DFA(const json& j);
-
     DFA(const std::vector<std::string> &alphabet, const std::string &initialState,
         const std::vector<std::string> &acceptingStates,
         const std::map<std::string, std::map<std::string, std::string>> &transitions);

@@ -7,7 +7,6 @@
 #include "Utils/Logger.h"
 #include "Group.h"
 
-using namespace std;
 
 class Process {
 private:

@@ -6,7 +6,7 @@
 #define ENGINE_LOGGER_H
 
 // Zet DEBUG_MODE op true om debugberichten te tonen, false om ze te verbergen
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 #include <string>
 
 enum class LogLevel { INFO, DEBUG, WARNING, ERROR, SUCCESS };

@@ -70,21 +70,7 @@ DFA::DFA(std::string filename) {
     }
 }
 
-DFA::DFA(const json& j) {
-    for (const auto &symbol: j["alphabet"]) {
-        alphabet_.push_back(symbol);
-    }
 
-    for (const auto &state: j["states"]) {
-        if (state["starting"])
-            initialState_ = state["name"];
-        if (state["accepting"])
-            acceptingStates_.push_back(state["name"]);
-    }
-    for (const auto &transition: j["transitions"]) {
-        transitions_[transition["from"]][transition["input"]] = transition["to"];
-    }
-}
 
 DFA::~DFA() {
 
@@ -93,7 +79,21 @@ DFA::~DFA() {
 bool DFA::accepts(std::string input) const {
     std::string currentState = initialState_;
     for(char c: input) {
-        currentState = transitions_.at(currentState).at(std::string(1, c));
+        std::string symbol(1, c);
+
+        if (std::find(alphabet_.begin(), alphabet_.end(), symbol) == alphabet_.end()) {
+            return false;
+        }
+
+        if (transitions_.count(currentState) == 0) {
+            std::cerr << "Missing state in transitions: " << currentState << "\n";
+        }
+        else if (transitions_.at(currentState).count(symbol) == 0) {
+            std::cerr << "Missing symbol in state " << currentState << ": " << symbol << "\n";
+        }
+
+        currentState = transitions_.at(currentState).at(symbol);  // crash likely happens here
+
 
     }
     return std::find(acceptingStates_.begin(), acceptingStates_.end(), currentState) != acceptingStates_.end();

@@ -16,8 +16,8 @@ std::string RE::get_re() {
 
 ENFA RE::createBasicENFA(char c) {
     ENFA BasicENFA;
-    ENFA_state* start = new ENFA_state("q" + std::to_string(stateCount++), false, true);
-    ENFA_state* end = new ENFA_state("q" + std::to_string(stateCount++), true, false);
+    std::shared_ptr<ENFA_state> start = make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), false, true));
+    std::shared_ptr<ENFA_state> end =  make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), true, false));
     start->add_transition(std::string(1, c), end);
     BasicENFA.add_state(start);
     BasicENFA.add_state(end);
@@ -28,8 +28,8 @@ ENFA RE::createBasicENFA(char c) {
 
 ENFA RE::applyKleeneStar(ENFA OldENFA, char epsilon) {
     ENFA KleeneStarENFA;
-    ENFA_state* start = new ENFA_state("q" + std::to_string(stateCount++), false, true);
-    ENFA_state* end = new ENFA_state("q" + std::to_string(stateCount++), true, false);
+    std::shared_ptr<ENFA_state> start = make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), false, true));
+    std::shared_ptr<ENFA_state> end = make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), true, false));
 
     start->add_transition(std::string(1, epsilon), OldENFA.get_start_state());
     OldENFA.get_start_state()->set_start(false);
@@ -55,8 +55,8 @@ ENFA RE::applyKleeneStar(ENFA OldENFA, char epsilon) {
 
 ENFA RE::createUnionENFA(ENFA Links, ENFA Rechts, char epsilon) {
     ENFA UnionENFA;
-    ENFA_state* start = new ENFA_state("q" + std::to_string(stateCount++), false, true);
-    ENFA_state* end = new ENFA_state("q" + std::to_string(stateCount++), true, false);
+    std::shared_ptr<ENFA_state> start = make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), false, true));
+    std::shared_ptr<ENFA_state> end = make_shared<ENFA_state>(ENFA_state("q" + std::to_string(stateCount++), true, false));
 
     start->add_transition(std::string(1, epsilon), Links.get_start_state());
     start->add_transition(std::string(1, epsilon), Rechts.get_start_state());
