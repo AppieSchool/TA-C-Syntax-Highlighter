@@ -24,10 +24,13 @@ public:
 
     void saveFile();
     std::string escapeHTML(const std::string &text);
+
+    void addError(const std::string &errorMessage);
 private:
     std::string filename;
     std::string htmlContent;
     std::ofstream file;
+    std::string errorMessage;
 };
 
 

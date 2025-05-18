@@ -7,6 +7,7 @@
 #include <vector>
 #include "Group.h"
 #include "ini_configuration.h"
+#include "Utils/functions.h"
 
 class Conf_Reader {
     public:
@@ -20,13 +21,6 @@ class Conf_Reader {
      * @return A pair where the first element is a vector of all groups that were found, and the second element is the error value, if it was detected.
      */
     static pair<std::vector<Group *>, int> read_conf(const ini::Configuration &conf) ;
-
-    /** Method-check for compliance with the rule of closing brackets in a line
-     *
-     * @param str The string that will be checked.
-     * @return True, if the check is successful and the rule is followed.
-     */
-    static bool are_brackets_balanced(const std::string &str);
 
     /** Extending the merge_conf(std::vector<Group *> &, std::vector<Group *> &, std::string) method to work starting from configuration files.
      *

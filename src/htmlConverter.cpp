@@ -4,15 +4,67 @@
 
 HTMLWriter::HTMLWriter(const std::string &filename) : filename(filename) {
     Logger::log(LogLevel::INFO, "Initializing HTMLWriter with file: " + filename);
-    htmlContent = "<html><head><title>C++ Code Syntax Highlighting</title><style>"
-                  "body { font-family: Arial, sans-serif; margin: 20px; }"
-                  "h1 { color: #333; text-align: center; }"
-                  ".groupLegend { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }"
-                  ".groupItem { padding: 5px; font-weight: 500; display: inline-block; margin-right: 10px; }"
-                  ".tooltip { position: relative; display: inline-block; cursor: pointer; }"
-                  ".tooltip .tooltiptext { visibility: hidden; width: 120px; background-color: #6c757d; color: #fff; text-align: center; border-radius: 5px; padding: 5px 0; position: absolute; z-index: 1; bottom: 100%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; }"
-                  ".tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }"
-                  "</style></head><body>";
+    htmlContent = R"(
+<html>
+<head>
+    <title>C++ Code Syntax Highlighting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 2px solid #ccc;
+            height: 100vh;
+        }
+        .main {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .console {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 250px;
+                background-color: #ffffff;
+                color: #000000;
+                font-family: monospace;
+                border-top: 2px solid #ccc;
+                padding: 10px 20px;
+                overflow-y: auto;
+                z-index: 1000;
+                transition: background-color 0.3s, color 0.3s;
+            }
+        .groupItem {
+            padding: 5px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar">
+        <h2>Legend</h2>
+        <div class="groupItem" style="color:#ff7f50; font-weight:900;">Group 0: C++ Keywords</div>
+        <div class="groupItem" style="color:#6a5acd; font-weight:900;">Group 1: String Types</div>
+        <div class="groupItem" style="color:#4169e1; font-weight:900;">Group 2: C++ Containers</div>
+        <div class="groupItem" style="color:#3cb371; font-weight:900;">Group 3: RegEx Pattern</div>
+    </div>
+    <div class="main">
+)";
+
 }
 
 HTMLWriter::~HTMLWriter() {
@@ -46,19 +98,17 @@ void HTMLWriter::saveFile() {
     Logger::log(LogLevel::INFO, "Saving HTML file: " + filename);
 
     // Add a header and some introduction text
-    htmlContent += "<h1>C++ Code Syntax Highlighting</h1>";
-    htmlContent += "<p>This page highlights various C++ keywords and types based on predefined groups.</p>";
+    htmlContent += "</div></div>"; // closes .main and .container
+    htmlContent += R"(
+            <div class="console">
+                <h2>Output Log</h2>
+                <pre>
+                    )" + errorMessage + R"(
+                </pre>
+            </div>
+            </body></html>
+            )";
 
-    // Add group legend
-    htmlContent += "<div class=\"groupLegend\"><h2>Legend</h2>";
-    htmlContent += "<div class=\"groupItem\" style=\"color:#ff7f50; font-weight:500;\">Group 0: C++ Keywords</div>";
-    htmlContent += "<div class=\"groupItem\" style=\"color:#6a5acd; font-weight:500;\">Group 1: String Types</div>";
-    htmlContent += "<div class=\"groupItem\" style=\"color:#4169e1; font-weight:500;\">Group 2: C++ Containers</div>";
-    htmlContent += "<div class=\"groupItem\" style=\"color:#3cb371; font-weight:900;\">Group 3: Regular Expression Pattern</div>";
-    htmlContent += "</div>";
-
-    // Add the closing tags for the HTML content
-    htmlContent += "</body></html>";
 
     // Print the full content before saving
     std::string content = "========== HTML CONTENT BEFORE SAVING ==========";
@@ -105,4 +155,10 @@ std::string HTMLWriter::escapeHTML(const std::string &text) {
     }
 
     return escapedText.str();
+}
+
+void HTMLWriter::addError(const std::string &text) {
+    Logger::log(LogLevel::INFO, "Adding error message to HTML output: " + text);
+    errorMessage += "<div class=\"error\">" + escapeHTML(text) + "</div>";
+    errorMessage += "<br>";
 }

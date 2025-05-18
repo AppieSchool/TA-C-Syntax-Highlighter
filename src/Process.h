@@ -6,7 +6,7 @@
 #include "ENFA.h"
 #include "Utils/Logger.h"
 #include "Group.h"
-
+#include "Utils/functions.h"
 
 class Process {
 private:

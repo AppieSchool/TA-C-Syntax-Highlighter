@@ -21,6 +21,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         Logger::log(LogLevel::INFO, "Successfully opened input file: " + inputFileName);
     }
 
+    // TODO: give in the groups so that the Sidebar is correct
     HTMLWriter output("output.html");
     Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
@@ -34,7 +35,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
             continue;
         }
 
-        Logger::log(LogLevel::INFO, "Converting regex to ENFA for group: " + group->getName());
+        Logger::log(LogLevel::INFO, "Converting regex to minimalized DFA for group: " + group->getName());
         RE GroupRegex(group->getRegex());
         ENFA GroupNFA = GroupRegex.toENFA();
         DFA GroupDFA = GroupNFA.toDFA();
@@ -43,23 +44,29 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
     }
 
     Logger::log(LogLevel::INFO, "Reading input file and tokenizing words...");
-    string line;
-    vector<vector<string>> lines;
+    std::string line;
+    std::vector<std::vector<std::string>> lines;
+
     while (getline(inputFile, line)) {
         Logger::log(LogLevel::DEBUG, "Read line: " + line);
 
-        vector<string> words;
-        istringstream stream(line);
-        string word;
-        while (stream >> word) {
-            Logger::log(LogLevel::DEBUG, "Tokenized word: " + word);
-            words.push_back(word);
-        }
-        lines.push_back(words);
+        std::vector<std::string> words = tokenizeLine(line);  // Tokenize current line
+        lines.push_back(words);  // Always push a vector (even if empty)
     }
+
     inputFile.close();
     Logger::log(LogLevel::INFO, "Finished reading input file.");
 
+    // Check for balanced brackets
+    auto [balanced, lineNumber] = bracket_line(lines);
+    if (!balanced) {
+        Logger::log(LogLevel::INFO, "Unbalanced brackets found in line: " + to_string(lineNumber));
+        output.addError("Unbalanced brackets found in line: " + to_string(lineNumber));
+    } else {
+        Logger::log(LogLevel::INFO, "All brackets are balanced.");
+    }
+
+    // TODO: check for semicolons
 
     Logger::log(LogLevel::INFO, "Processing words...");
     for (const auto& line : lines) {
@@ -71,7 +78,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
             for (size_t index = 0; index < dfas.size(); index++) {
                 g = getGroups()[index];
 
-                Logger::log(LogLevel::DEBUG, "Checking if ENFA accepts word: " + word + " for group: " + g->getName());
+                Logger::log(LogLevel::DEBUG, "Checking if DFA accepts word: " + word + " for group: " + g->getName());
                 if (dfas[index].accepts(word)) {
                     Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;

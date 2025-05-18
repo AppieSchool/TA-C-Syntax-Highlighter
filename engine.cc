@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include <stack>
@@ -12,26 +11,6 @@
 
 using namespace std;
 
-bool areBracketsBalanced(const string& str) {
-    stack<char> s;
-    for (char ch : str) {
-        if (ch == '(' || ch == '{' || ch == '[') {
-            s.push(ch);
-        } else if (ch == ')' || ch == '}' || ch == ']') {
-            if (s.empty()) {
-                return false;
-            }
-            char top = s.top();
-            s.pop();
-            if ((ch == ')' && top != '(') ||
-                (ch == '}' && top != '{') ||
-                (ch == ']' && top != '[')) {
-                return false;
-            }
-        }
-    }
-    return s.empty();
-}
 int main(int argc, char const* argv[])
 {
     int retVal = 0;

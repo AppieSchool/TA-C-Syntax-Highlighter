@@ -115,7 +115,7 @@ ENFA RE::createConcatenationENFA(ENFA Links, ENFA Rechts, char epsilon) {
 }
 
 bool RE::isLiteral(char c) {
-    return std::isalnum(c) || c == '?' || c == ',' || c == '!' || c == ':' || c == '-' || c == '_';
+    return std::isalnum(c) || std::string("?#,:!:-_<>/\\=.&\"'").find(c) != std::string::npos;
 }
 
 bool RE::isOperator(char c) {

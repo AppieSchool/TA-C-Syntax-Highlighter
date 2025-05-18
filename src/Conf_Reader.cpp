@@ -33,33 +33,6 @@ pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration 
     return {groups, retVal};
 }
 
-bool Conf_Reader::are_brackets_balanced(const string &str){
-    // Creates a stack in which we will store all found brackets
-    stack<char> brackets_stack;
-    for (char character : str) {
-        // If the bracket is opening, then add it to the stack.
-        if (character == '(' || character == '{' || character == '[') {
-            brackets_stack.push(character);
-            // If the bracket is closing then
-        } else if (character == ')' || character == '}' || character == ']') {
-            // Check if the stack is empty
-            if (brackets_stack.empty()) {
-                return false;
-            }
-            // Get the last bracket
-            const char top = brackets_stack.top();
-            brackets_stack.pop();
-            // If the closing bracket is the same type as the resulting last bracket,
-            // then everything is ok.
-            if ((character == ')' && top != '(') ||
-                (character == '}' && top != '{') ||
-                (character == ']' && top != '[')) {
-                return false;
-                }
-        }
-    }
-    return brackets_stack.empty();
-}
 
 void Conf_Reader::merge_conf(const std::string &first_file, const std::string &second_file,
     const string &new_file_name) {
