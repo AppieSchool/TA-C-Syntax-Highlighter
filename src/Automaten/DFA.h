@@ -11,6 +11,7 @@
 #include "json.hpp"
 #include "Table.h"
 #include "State.h"
+#include "queue"
 
 
 using json = nlohmann::json;

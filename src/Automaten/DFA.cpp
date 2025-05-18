@@ -14,30 +14,26 @@
 
 using namespace std;
 
-vector<string> getStates(const string input)
-{
+vector<string> getStates(const string& input) {
     vector<string> states;
     string state;
-    for(const auto symbol : input)
-    {
-        if(symbol == '{')
-        {
-
-        }
-        else if(symbol == '}')
-        {
-            states.push_back(state);
-        }
-        else if(symbol == ',')
-        {
-            states.push_back(state);
-            state = "";
-        }
-        else
-        {
-            state.push_back(symbol);
+    for (size_t i = 0; i < input.size(); ++i) {
+        if (input[i] == '{' || input[i] == '}' || input[i] == ' ') {
+            continue;
+        } else if (input[i] == ',') {
+            if (!state.empty()) {
+                states.push_back(state);
+                state.clear();
+            }
+        } else {
+            state.push_back(input[i]);
         }
     }
+    if (!state.empty()) {
+        states.push_back(state);
+    }
+    std::sort(states.begin(), states.end());
+    states.erase(std::unique(states.begin(), states.end()), states.end());
     return states;
 }
 
@@ -262,256 +258,207 @@ vector<string> sort(vector<string> states)
 }
 
 DFA DFA::minimize() {
-    vector<string> states;
-    for(const auto& statePair: transitions_) {
+    // Step 1: Get all states
+    std::vector<std::string> states;
+    for (const auto& statePair : transitions_) {
         states.push_back(statePair.first);
     }
-    int size1 = states.size();
 
     states = sort(states);
+    int size1 = states.size();
 
     Table* table1 = new Table(states);
 
-    for (int i = 0; i < size1; i++)
-    {
-        for (int j = i + 1; j < size1; j++)
-        {
-            string state1 = states[i];
-            string state2 = states[j];
-            bool isAccepting1 = find(acceptingStates_.begin(), acceptingStates_.end(), state1) != acceptingStates_.end();
-            bool isAccepting2 = find(acceptingStates_.begin(), acceptingStates_.end(), state2) != acceptingStates_.end();
-            if (isAccepting1 != isAccepting2)
-            {
-                table1->setDistinguishable(state1,state2);
+    // Step 2: Mark distinguishable pairs based on accepting vs non-accepting
+    for (int i = 0; i < size1; ++i) {
+        for (int j = i + 1; j < size1; ++j) {
+            bool isAccepting1 = std::find(acceptingStates_.begin(), acceptingStates_.end(), states[i]) != acceptingStates_.end();
+            bool isAccepting2 = std::find(acceptingStates_.begin(), acceptingStates_.end(), states[j]) != acceptingStates_.end();
+            if (isAccepting1 != isAccepting2) {
+                table1->setDistinguishable(states[i], states[j]);
             }
         }
     }
 
+    // Step 3: Propagate distinguishability
     bool changed;
     do {
         changed = false;
-        vector<pair<string, string>> dis = table1->getDistinguishables();
-        for (int i = 0; i < dis.size(); ++i)
-        {
-            string state1 = dis[i].first;
-            string state2 = dis[i].second;
-            for(basic_string<char> c : alphabet_)
-            {
-                string next1 = transitions_.at(state1).at(c);
-                string next2 = transitions_.at(state2).at(c);
-                if(next1 < next2)
-                {
-                    if(table1->getDistinguishability(next1,next2) == "X")
-                    {
+        for (const auto& [state1, state2] : table1->getDistinguishables()) {
+            for (const auto& symbol : alphabet_) {
+                std::string next1 = transitions_.at(state1).at(symbol);
+                std::string next2 = transitions_.at(state2).at(symbol);
+                if (next1 != next2) {
+                    std::string low = std::min(next1, next2);
+                    std::string high = std::max(next1, next2);
+                    if (table1->getDistinguishability(low, high) == "X") {
+                        table1->setDistinguishable(std::min(state1, state2), std::max(state1, state2));
                         changed = true;
-                        table1->setDistinguishable(min(state1,state2),max(state1,state2));
-                    }
-                }
-                else if(next1 > next2)
-                {
-                    if(table1->getDistinguishability(next2,next1) == "X")
-                    {
-                        changed = true;
-                        table1->setDistinguishable(min(state1,state2),max(state1,state2));
                     }
                 }
             }
         }
     } while (changed);
 
-
-    vector<pair<string, string>> dis = table1->getDistinguishables();
-    if(!dis.empty())
-    {
-        vector<vector<string>> pairs{};
-        vector<vector<string>> merge{};
-        for(int i =0;i<dis.size();i++)
-        {
-            vector<string> pair;
-            pair.emplace_back(dis[i].first);
-            pair.emplace_back(dis[i].second);
-            pairs.emplace_back(pair);
+    // Step 4: Find indistinguishable (mergeable) state pairs
+    std::vector<std::vector<std::string>> pairs;
+    for (int i = 0; i < size1; ++i) {
+        for (int j = i + 1; j < size1; ++j) {
+            if (table1->getDistinguishability(states[i], states[j]) == "-") {
+                pairs.push_back({states[i], states[j]});
+            }
         }
-        bool merged;
-        do {
-            merged = false;
-            for (int i = 0; i < pairs.size() - 1; i++) {
-                pairs[i] = sort(pairs[i]);
-                for (int j = 0; j < pairs[i].size(); j++) {
-                    if (count(pairs[i + 1].begin(), pairs[i + 1].end(), pairs[i][j]) > 0) {
-                        for (const auto& state : pairs[i + 1]) {
-                            if (find(pairs[i].begin(), pairs[i].end(), state) == pairs[i].end()) {
-                                pairs[i].emplace_back(state);
-                                merged = true;
+    }
+
+    // Step 5: Merge overlapping sets
+    bool merged;
+    do {
+        merged = false;
+        for (size_t i = 0; i < pairs.size(); ++i) {
+            for (size_t j = i + 1; j < pairs.size(); ++j) {
+                for (const auto& s : pairs[i]) {
+                    if (std::find(pairs[j].begin(), pairs[j].end(), s) != pairs[j].end()) {
+                        // Merge j into i
+                        for (const auto& state : pairs[j]) {
+                            if (std::find(pairs[i].begin(), pairs[i].end(), state) == pairs[i].end()) {
+                                pairs[i].push_back(state);
                             }
                         }
-                    }
-                    if (merged)
+                        pairs.erase(pairs.begin() + j);
+                        merged = true;
                         break;
-                }
-                if (merged)
-                    break;
-            }
-
-            for (int i = 0; i < pairs.size() - 1; i++) {
-                pairs[i] = sort(pairs[i]);
-                pairs[i + 1] = sort(pairs[i + 1]);
-
-                if (pairs[i] == pairs[i + 1]) {
-                    pairs.erase(pairs.begin() + i + 1);
-                    merged = true;
-                } else {
-                    bool subset = true;
-                    if (pairs[i].size() < pairs[i + 1].size()) {
-                        for (const auto& state : pairs[i]) {
-                            if (find(pairs[i + 1].begin(), pairs[i + 1].end(), state) == pairs[i + 1].end()) {
-                                subset = false;
-                                break;
-                            }
-                        }
-                        if (subset) {
-                            pairs.erase(pairs.begin() + i);
-                            merged = true;
-                        }
-                    } else if (pairs[i].size() > pairs[i + 1].size()) {
-                        for (const auto& state : pairs[i + 1]) {
-                            if (find(pairs[i].begin(), pairs[i].end(), state) == pairs[i].end()) {
-                                subset = false;
-                                break;
-                            }
-                        }
-                        if (subset) {
-                            pairs.erase(pairs.begin() + i + 1);
-                            merged = true;
-                        }
                     }
                 }
-            }
-        } while (merged);
-
-
-        vector<string> mergedStates;
-        for(int i=0;i<pairs.size();i++)
-        {
-            string newState = "{";
-            for(int j=0;j<pairs[i].size()-1;j++)
-            {
-                newState += pairs[i][j] + ",";
-            }
-            newState += pairs[i][pairs[i].size()-1] + "}";
-            mergedStates.emplace_back(newState);
-        }
-
-        vector<string> newStates;
-
-        for(const auto & mergedState : mergedStates)
-        {
-            newStates.emplace_back(mergedState);
-            vector<string> state = getStates(mergedState);
-            for(auto & j : states)
-            {
-                if(std::count(state.begin(), state.end(),j) == 0)
-                    newStates.emplace_back(j);
+                if (merged) break;
             }
         }
+    } while (merged);
 
-        vector<string> newAlphabet = alphabet_;
-        string newInitialState = initialState_;
-        vector<string> newAcceptingStates;
-        map<string, map<string, string>> newTransitions;
+    // Step 6: Collect merged state sets and fill unmerged ones
+    std::vector<std::set<std::string>> mergedStateSets;
+    std::set<std::string> mergedSeen;
+    for (const auto& group : pairs) {
+        std::set<std::string> groupSet(group.begin(), group.end());
+        mergedStateSets.push_back(groupSet);
+        mergedSeen.insert(group.begin(), group.end());
+    }
+    for (const auto& state : states) {
+        if (!mergedSeen.count(state)) {
+            mergedStateSets.push_back({state});
+        }
+    }
 
-        // Determine the new initial state
-        for (const auto& mergedState : mergedStates) {
-            vector<string> state = getStates(mergedState);
-            if (std::count(state.begin(), state.end(), initialState_) > 0) {
-                newInitialState = mergedState;
+    // Step 7: Helper for consistent merged state name
+    auto makeStateName = [](const std::set<std::string>& group) {
+        std::vector<std::string> sorted(group.begin(), group.end());
+        std::sort(sorted.begin(), sorted.end());
+        std::string name = "{";
+        for (size_t i = 0; i < sorted.size(); ++i) {
+            name += sorted[i];
+            if (i != sorted.size() - 1) name += ", ";
+        }
+        name += "}";
+        return name;
+    };
+
+    // Step 8: Build remapping table
+    std::map<std::string, std::string> stateToMerged;
+    for (const auto& group : mergedStateSets) {
+        std::string mergedName = makeStateName(group);
+        for (const auto& state : group) {
+            stateToMerged[state] = mergedName;
+        }
+    }
+
+    // Step 9: Construct new DFA components
+    std::string newInitialState = stateToMerged[initialState_];
+    std::vector<std::string> newAcceptingStates;
+    std::map<std::string, std::map<std::string, std::string>> newTransitions;
+
+    std::set<std::string> seenAccepting;
+    for (const auto& group : mergedStateSets) {
+        std::string mergedName = makeStateName(group);
+
+        // If any state in group is accepting
+        for (const auto& s : group) {
+            if (std::find(acceptingStates_.begin(), acceptingStates_.end(), s) != acceptingStates_.end()) {
+                if (!seenAccepting.count(mergedName)) {
+                    newAcceptingStates.push_back(mergedName);
+                    seenAccepting.insert(mergedName);
+                }
                 break;
             }
         }
 
-        // Determine the new accepting states
-        for (const auto& mergedState : mergedStates) {
-            vector<string> state = getStates(mergedState);
-            for (const auto& acceptingState : acceptingStates_) {
-                if (std::count(state.begin(), state.end(), acceptingState) > 0) {
-                    newAcceptingStates.push_back(mergedState);
-                    break;
+        // Add transitions
+        for (const auto& symbol : alphabet_) {
+            std::set<std::string> targets;
+            for (const auto& s : group) {
+                if (transitions_.count(s) && transitions_.at(s).count(symbol)) {
+                    targets.insert(stateToMerged[transitions_.at(s).at(symbol)]);
                 }
             }
-        }
 
-        // Determine the new transitions
-        for (const auto& mergedState : mergedStates) {
-            vector<string> state = getStates(mergedState);
-            for (const auto& symbol : alphabet_) {
-                vector<string> nextStates;
-                for (const auto& s : state) {
-                    nextStates.push_back(transitions_.at(s).at(symbol));
-                }
-                sort(nextStates.begin(), nextStates.end());
-                string newNextState = "{";
-                for (int i = 0; i < nextStates.size() - 1; i++) {
-                    newNextState += nextStates[i] + ",";
-                }
-                newNextState += nextStates[nextStates.size() - 1] + "}";
-                newTransitions[mergedState][symbol] = newNextState;
+            if (!targets.empty()) {
+                // If all targets are the same merged state, take it
+                std::string target = *targets.begin();
+                newTransitions[mergedName][symbol] = target;
             }
         }
-
-        table = table1;
-
-        return DFA(newAlphabet, newInitialState, newAcceptingStates, newTransitions);
     }
-    else
-    {
-        return DFA(alphabet_,initialState_,acceptingStates_,transitions_);
-    }
+    table = table1;
+    return DFA(alphabet_, newInitialState, newAcceptingStates, newTransitions);
 }
 
-bool DFA::operator==( DFA& other)  {
+bool DFA::operator==(DFA& other) {
     // Minimize both DFAs
-    DFA minDFA1 = this->minimize();
-    DFA minDFA2 = other.minimize();
+    DFA dfa1 = this->minimize();
+    DFA dfa2 = other.minimize();
 
     // Compare alphabets
-    if (minDFA1.getAlphabet() != minDFA2.getAlphabet()) {
+    if (dfa1.getAlphabet() != dfa2.getAlphabet()) {
         return false;
     }
 
-    // Compare initial states
-    if (minDFA1.getInitialState() != minDFA2.getInitialState()) {
-        return false;
-    }
+    std::map<std::string, std::string> mapping1to2;
+    std::map<std::string, std::string> mapping2to1;
 
-    // Compare accepting states
-    vector<string> acceptingStates1 = minDFA1.getAcceptingStates();
-    vector<string> acceptingStates2 = minDFA2.getAcceptingStates();
-    sort(acceptingStates1.begin(), acceptingStates1.end());
-    sort(acceptingStates2.begin(), acceptingStates2.end());
-    if (acceptingStates1 != acceptingStates2) {
-        return false;
-    }
+    std::queue<std::pair<std::string, std::string>> q;
+    q.push({dfa1.getInitialState(), dfa2.getInitialState()});
+    mapping1to2[dfa1.getInitialState()] = dfa2.getInitialState();
+    mapping2to1[dfa2.getInitialState()] = dfa1.getInitialState();
 
-    // Compare transitions
-    auto transitions1 = minDFA1.getTransitions();
-    auto transitions2 = minDFA2.getTransitions();
-    if (transitions1.size() != transitions2.size()) {
-        return false;
-    }
+    auto t1 = dfa1.getTransitions();
+    auto t2 = dfa2.getTransitions();
 
-    for (const auto& state1 : transitions1) {
-        const string& stateName1 = state1.first;
-        if (transitions2.find(stateName1) == transitions2.end()) {
-            return false;
+    auto a1 = dfa1.getAcceptingStates();
+    auto a2 = dfa2.getAcceptingStates();
+
+    std::set<std::string> accepting1(a1.begin(), a1.end());
+    std::set<std::string> accepting2(a2.begin(), a2.end());
+
+    while (!q.empty()) {
+        auto [s1, s2] = q.front();
+        q.pop();
+
+        bool isAccepting1 = accepting1.count(s1);
+        bool isAccepting2 = accepting2.count(s2);
+
+        if (isAccepting1 != isAccepting2) return false;
+
+        for (const std::string& sym : dfa1.getAlphabet()) {
+            std::string n1 = t1[s1][sym];
+            std::string n2 = t2[s2][sym];
+
+            if (mapping1to2.count(n1) == 0 && mapping2to1.count(n2) == 0) {
+                mapping1to2[n1] = n2;
+                mapping2to1[n2] = n1;
+                q.push({n1, n2});
+            } else if (mapping1to2[n1] != n2 || mapping2to1[n2] != n1) {
+                return false;
+            }
         }
-
-        const auto& stateTransitions1 = state1.second;
-        const auto& stateTransitions2 = transitions2.at(stateName1);
-        if (stateTransitions1 != stateTransitions2) {
-            return false;
-        }
     }
-
     return true;
 }
 

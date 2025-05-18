@@ -38,8 +38,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         RE GroupRegex(group->getRegex());
         ENFA GroupNFA = GroupRegex.toENFA();
         DFA GroupDFA = GroupNFA.toDFA();
-        // TODO: Fix the minimization process IT DOES NOT WORK
-        //GroupDFA.minimize();
+        GroupDFA.minimize();
         dfas.push_back(GroupDFA);
     }
 
