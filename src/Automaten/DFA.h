@@ -68,6 +68,8 @@ public:
     string unionRegex(const string &r1, const string &r2);
 
     void eliminateState(map<std::string, std::string> &regexTransitions, const string &stateToRemove);
+
+    std::tuple<std::string, bool> isCloseToAcceptingState(const std::string& input, int maxDistance);
 };
 
 

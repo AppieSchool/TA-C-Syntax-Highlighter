@@ -88,7 +88,7 @@ bool DFA::accepts(std::string input) const {
             std::cerr << "Missing symbol in state " << currentState << ": " << symbol << "\n";
         }
 
-        currentState = transitions_.at(currentState).at(symbol);  // crash likely happens here
+        currentState = transitions_.at(currentState).at(symbol);
 
 
     }
@@ -679,4 +679,65 @@ RE DFA::toRE() {
     }
     RE r = RE(finalRegex);
     return r;
+}
+
+std::tuple<std::string, bool> DFA::isCloseToAcceptingState(const std::string &input, int maxDistance) {
+    std::string currentState = initialState_;
+
+    // Traverse DFA using input
+    for (char c : input) {
+        std::string symbol(1, c);
+
+        if (std::find(alphabet_.begin(), alphabet_.end(), symbol) == alphabet_.end()) {
+            return {"", false};  // Invalid symbol
+        }
+
+        if (transitions_.count(currentState) == 0 || transitions_.at(currentState).count(symbol) == 0) {
+            return {"", false};
+        }
+
+        currentState = transitions_.at(currentState).at(symbol);
+    }
+
+    // If already accepting
+    if (std::find(acceptingStates_.begin(), acceptingStates_.end(), currentState) != acceptingStates_.end()) {
+        return {input, true};  // No fix needed
+    }
+
+    std::queue<std::tuple<std::string, std::vector<std::string>, int>> queue;
+    std::set<std::string> visited;
+
+    queue.push({currentState, {}, 0});
+    visited.insert(currentState);
+
+    while (!queue.empty()) {
+        auto [state, path, distance] = queue.front();
+        queue.pop();
+
+        if (distance >= maxDistance) continue;
+
+        for (const std::string &symbol : alphabet_) {
+            if (transitions_.count(state) == 0 || transitions_.at(state).count(symbol) == 0) continue;
+
+            std::string next = transitions_.at(state).at(symbol);
+            std::vector<std::string> newPath = path;
+            newPath.push_back(symbol);
+
+            if (std::find(acceptingStates_.begin(), acceptingStates_.end(), next) != acceptingStates_.end()) {
+                std::string newPathStr = input;
+                for(const auto & c : newPath) {
+                    newPathStr += c;  // Append the symbol to the input
+                }
+
+                return {newPathStr, true};  // Found fix path
+            }
+
+            if (!visited.count(next)) {
+                queue.push({next, newPath, distance + 1});
+                visited.insert(next);
+            }
+        }
+    }
+
+    return {"", false};  // No close accepting state found
 }

@@ -21,7 +21,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         Logger::log(LogLevel::INFO, "Successfully opened input file: " + inputFileName);
     }
 
-    // TODO: give in the groups so that the Sidebar is correct
+    // TODO: give in the groups so that the Sidebar is correct in the HTML
     HTMLWriter output("output.html");
     Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
@@ -83,6 +83,12 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
                     Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;
                     break;
+                }else if(g->getName() == "groep2") {
+                    Logger::log(LogLevel::DEBUG, "Word: '" + word + "' not accepted by group: " + g->getName());
+                    auto [suggestion, close] = dfas[index].isCloseToAcceptingState(word, 3);
+                    if (close) {
+                        output.addError("Wrong word: " + word + " Did you mean: "  + suggestion + "?");
+                    }
                 }
             }
 
