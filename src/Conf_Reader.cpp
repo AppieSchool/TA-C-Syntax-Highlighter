@@ -46,7 +46,7 @@ void get_unique_display_name(const vector<Group*>& existing_groups, string& sugg
     }
 
     if (!base_taken && max_suffix == -1) {
-        suggested_name = base;
+        suggested_name = base+"0";
         return;
     }
 
