@@ -26,6 +26,8 @@ HTMLWriter::HTMLWriter(const std::string &filename, const vector<Group *> &group
             background-color: #f4f4f4;
             border-right: 2px solid #ccc;
             height: 100vh;
+            height: calc(100vh - 300px);
+            overflow-y: auto;
         }
         .main {
             flex-grow: 1;
