@@ -44,5 +44,7 @@ bool isControlStructure(const std::vector<std::string>& line);
  */
 void checkSemicolons(const std::vector<std::vector<std::string>>& lines);
 
+std::string getTrailingDigits(const std::string& input);
+
 
 #endif //ENGINE_FUNCTIONS_H

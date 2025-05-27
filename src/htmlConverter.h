@@ -8,11 +8,12 @@
 
 #include <fstream>
 #include <string>
-#include "Utils/Logger.h"
+#include <vector>
+#include "Group.h"
 
 class HTMLWriter {
 public:
-    HTMLWriter(const std::string &filename);
+    HTMLWriter(const std::string &filename, const vector<Group *> &groups);
 
     ~HTMLWriter();
 

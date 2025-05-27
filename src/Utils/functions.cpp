@@ -138,3 +138,18 @@ void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
     }
 }
 
+std::string getTrailingDigits(const std::string& input) {
+    std::string result;
+
+    // Go from the end of the line to the beginning
+    for (int i = static_cast<int>(input.size()) - 1; i >= 0; --i) {
+        if (std::isdigit(input[i])) {
+            result = input[i] + result;  // Add a digit to the beginning of the result
+        } else {
+            break;  // Stop if you encounter a non-digit
+        }
+    }
+
+    return result;
+}
+

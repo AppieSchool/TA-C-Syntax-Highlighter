@@ -2,7 +2,9 @@
 #include <iostream>
 #include <sstream>
 
-HTMLWriter::HTMLWriter(const std::string &filename) : filename(filename) {
+#include "Logger.h"
+
+HTMLWriter::HTMLWriter(const std::string &filename, const vector<Group *> &groups) : filename(filename) {
     Logger::log(LogLevel::INFO, "Initializing HTMLWriter with file: " + filename);
     htmlContent = R"(
 <html>
@@ -57,10 +59,12 @@ HTMLWriter::HTMLWriter(const std::string &filename) : filename(filename) {
 <div class="container">
     <div class="sidebar">
         <h2>Legend</h2>
-        <div class="groupItem" style="color:#ff7f50; font-weight:900;">Group 0: C++ Keywords</div>
-        <div class="groupItem" style="color:#6a5acd; font-weight:900;">Group 1: String Types</div>
-        <div class="groupItem" style="color:#4169e1; font-weight:900;">Group 2: C++ Containers</div>
-        <div class="groupItem" style="color:#3cb371; font-weight:900;">Group 3: RegEx Pattern</div>
+)";
+
+    for (const Group *group : groups) {
+        htmlContent += "        " + group->toHTML_String();
+    }
+    htmlContent +=  R"(
     </div>
     <div class="main">
 )";

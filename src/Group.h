@@ -8,11 +8,12 @@ using namespace std;
 class Group {
 public:
     string name;
+    std::string display_name;
     string RE;
     string color;
     int fontWeight;
 
-    Group(const string& name, const string& RE, const string& color, int fontWeight);
+    Group(const string& name, const string& display_name, const string& RE, const string& color, int fontWeight);
 
     const string &getName() const;
     void setName(const string &name);
@@ -26,6 +27,7 @@ public:
     int getFontWeight() const;
     void setFontWeight(int fontWeight);
 
+    [[nodiscard]] string toHTML_String() const;
 };
 
 

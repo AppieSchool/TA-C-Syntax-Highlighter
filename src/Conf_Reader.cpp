@@ -21,13 +21,14 @@ pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration 
         string group_name = "groep" + to_string(i);
         string RE = conf[group_name]["RE"].as_string_or_die();
         string color = conf[group_name]["color"].as_string_or_die();
+        string display_name = conf[group_name]["displayName"].as_string_or_default("Custom group");
         const int font_weight = conf[group_name]["fontWeight"].as_int_or_die();
         if (!are_brackets_balanced(RE)) {
             cerr << "Error: unbalanced brackets in RE for group: " << group_name << endl;
             retVal = 1;
             continue;
         }
-        auto* group = new Group(group_name, RE, color, font_weight);
+        auto* group = new Group(group_name, display_name, RE, color, font_weight);
         groups.push_back(group);
     }
     return {groups, retVal};

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Process::Process(vector<Group *> groups, string inputFileName) : groups(std::move(groups)) {
+Process::Process(vector<Group *> groups, const string& inputFileName) : groups(std::move(groups)) {
     Logger::log(LogLevel::INFO, "Starting Process constructor...");
 
     ifstream inputFile(inputFileName);
@@ -21,8 +21,7 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         Logger::log(LogLevel::INFO, "Successfully opened input file: " + inputFileName);
     }
 
-    // TODO: give in the groups so that the Sidebar is correct in the HTML
-    HTMLWriter output("output.html");
+    HTMLWriter output("output.html", this->groups);
     Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
     vector<DFA> dfas;

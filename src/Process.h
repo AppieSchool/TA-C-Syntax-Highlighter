@@ -14,7 +14,9 @@ private:
     string regex;
 public:
     Process() = default;
-    Process(vector<Group*> groups, string inputFileName);
+    //Process(vector<Group*> groups, string inputFileName);
+
+    Process(vector<Group *> groups, const string &inputFileName);
 
     const vector<Group*> &getGroups() const;
 
