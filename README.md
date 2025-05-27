@@ -1,6 +1,6 @@
 # togTA
 
-# 🧠 Automata-Powered Syntax Highlighter
+# Automata-Powered Syntax Highlighter
 
 This project is a C++ tool that uses **finite automata and regular expressions** to process and analyze text/code files. It detects patterns, highlights them in an HTML output, and performs light static analysis such as bracket and semicolon validation.
 
