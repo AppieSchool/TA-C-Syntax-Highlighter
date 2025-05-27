@@ -1,0 +1,10 @@
+#include <iostream>
+
+int main() {
+    int* ptr = nullptr;
+    if (ptr == nullptr) {
+        std::cerr << "pointer is null" << std::endl;
+    } else {
+        std::cout << "pointer is not null" << std::endl;
+    }
+}

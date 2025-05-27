@@ -1,0 +1,7 @@
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vect<int> nums = {1, 2, 3};
+    return 0;
+}
