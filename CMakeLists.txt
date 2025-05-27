@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Set an external name for the executable
 set(release_target "engine")
+set(debug_target "all_tests")
 
 # gtest
 set(GTEST_LIB "gtest")
@@ -51,15 +52,33 @@ target_include_directories(tests PUBLIC
 )
 
 # set all additional files for loading in the project
-set(EXTRA_SOURCES
+set(EXTRA_SOURCES_RELEASE
 		src/ini_configuration.cc
 		engine.cc
 )
 
 # Connect libraries and customize execution for release_target
-add_executable(${release_target} ${EXTRA_SOURCES})
+add_executable(${release_target} ${EXTRA_SOURCES_RELEASE})
 # target_sources(${release_target} PRIVATE ${RELEASE_CPP_FILES})
 # Adding a library with classes
-target_link_libraries(${release_target} PRIVATE cls tests)
+target_link_libraries(${release_target} PRIVATE cls)
 # indicate where to assemble the project
 install( TARGETS ${release_target} DESTINATION ${PROJECT_SOURCE_DIR}/)
+
+
+set(EXTRA_SOURCES_DEBUG
+		src/ini_configuration.cc
+)
+
+# Connect libraries and customize execution for release_target
+add_executable(${debug_target} ${EXTRA_SOURCES_DEBUG})
+# target_sources(${release_target} PRIVATE ${RELEASE_CPP_FILES})
+# Adding a library with classes
+link_directories(${GTEST_LIB_DIR})
+target_link_libraries(${debug_target} PRIVATE
+		gtest
+		gtest_main
+		cls tests
+)
+# indicate where to assemble the project
+install( TARGETS ${debug_target} DESTINATION ${PROJECT_SOURCE_DIR}/)
