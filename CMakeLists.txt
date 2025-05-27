@@ -17,6 +17,16 @@ set(CMAKE_CXX_STANDARD 17)
 # Set an external name for the executable
 set(release_target "engine")
 
+# gtest
+set(GTEST_LIB "gtest")
+set(GTEST_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/${GTEST_LIB}/include")
+set(GTEST_LIB_DIR "${CMAKE_SOURCE_DIR}/${GTEST_LIB}/lib")
+
+# tests lib
+file(GLOB DEBUG_TESTS_FILES "${CMAKE_SOURCE_DIR}/tests/cpp/*.cpp")
+add_library(tests STATIC ${DEBUG_TESTS_FILES})
+target_include_directories(tests PUBLIC "/tests/cpp/")
+
 # Load all .cpp from classes
 file(GLOB_RECURSE CLS_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 # list(REMOVE_ITEM CLS_SOURCES "${CMAKE_SOURCE_DIR}/src/Automaten/ENFA.cpp")
@@ -35,6 +45,10 @@ endforeach()
 target_include_directories(cls PUBLIC
 		${FILTERED_RELEASE_CLS_INCLUDE_DIRS}
 )
+target_include_directories(tests PUBLIC
+		${FILTERED_RELEASE_CLS_INCLUDE_DIRS}
+		${GTEST_INCLUDE_DIR}
+)
 
 # set all additional files for loading in the project
 set(EXTRA_SOURCES
@@ -46,6 +60,6 @@ set(EXTRA_SOURCES
 add_executable(${release_target} ${EXTRA_SOURCES})
 # target_sources(${release_target} PRIVATE ${RELEASE_CPP_FILES})
 # Adding a library with classes
-target_link_libraries(${release_target} PRIVATE cls)
+target_link_libraries(${release_target} PRIVATE cls tests)
 # indicate where to assemble the project
 install( TARGETS ${release_target} DESTINATION ${PROJECT_SOURCE_DIR}/)
