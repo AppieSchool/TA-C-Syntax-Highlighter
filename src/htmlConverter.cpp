@@ -62,7 +62,7 @@ HTMLWriter::HTMLWriter(const std::string &filename, const vector<Group *> &group
 )";
 
     for (const Group *group : groups) {
-        htmlContent += "        " + group->toHTML_String();
+        htmlContent += "        " + group->toHTML_String() + "\n";
     }
     htmlContent +=  R"(
     </div>
