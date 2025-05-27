@@ -88,10 +88,13 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
                     Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;
                     break;
-                }else if(g->getName() == "groep2") {
+                    // if the word is not accepted it will check if it can be close to an accepting state but only for the C++ Containers group
+                }else if(g->get_display_name() == "C++ Containers [Main]") {
                     Logger::log(LogLevel::DEBUG, "Word: '" + word + "' not accepted by group: " + g->getName());
-                    auto [suggestion, close] = dfas[index].isCloseToAcceptingState(word, 3);
+                    // Max edit distance that can be used to suggest a correction
+                    auto [suggestion, close] = dfas[index].isCloseToAcceptingState(word, maxEditDistance);
                     if (close) {
+                        // Suggest a correction if the word is close to an accepting state
                         output.addError("Wrong word: " + word + " Did you mean: "  + suggestion + "?");
                     }
                 }
