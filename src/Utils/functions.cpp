@@ -3,6 +3,11 @@
 //
 #include "functions.h"
 
+#include <iostream>
+#include <set>
+
+#include "Logger.h"
+
 
 bool are_brackets_balanced(const std::string& str) {
     // Creates a stack in which we will store all found brackets
@@ -66,7 +71,6 @@ std::tuple<bool, int> bracket_line(const std::vector<std::vector<std::string>>& 
 }
 
 
-
 std::vector<std::string> tokenizeLine(const std::string& line) {
     std::vector<std::string> tokens;
     std::string token;
@@ -90,5 +94,47 @@ std::vector<std::string> tokenizeLine(const std::string& line) {
     }
 
     return tokens;
+}
+
+bool isControlStructure(const std::vector<std::string> &line) {
+    static const std::set<std::string> controlKeywords = {
+        "if", "else", "for", "while", "switch", "do",
+        "class", "struct", "namespace", "try", "catch" , "#"
+    };
+
+    if (line.empty()) return false;
+    // The simplest heuristic:
+    std::string first = line[0];
+    // Check for functions (can start with type and end with parenthesis)
+    for (size_t i = 0; i < line.size(); ++i) {
+        if (line[i] == "(") {
+            // There is a bracket and no semicolon - possibly a function definition
+            for (size_t j = i; j < line.size(); ++j) {
+                if (line[j] == ")") {
+                    if (j + 1 < line.size() && (line[j + 1] == "{" || line[j + 1] == "const")) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    // Control structures
+    if (controlKeywords.count(first)) return true;
+    return false;
+}
+
+void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
+    for (size_t lineNum = 0; lineNum < lines.size(); ++lineNum) {
+        const auto& line = lines[lineNum];
+        // do not check empty lines
+        if (line.empty()) continue;
+        // do not check structures
+        if (isControlStructure(line)) continue;
+        const std::string& lastToken = line.back();
+        // Check the last element of a string
+        if (lastToken != ";" && lastToken != "{" && lastToken != "}") {
+            Logger::log(LogLevel::WARNING, "Warning: line " + std::to_string(lineNum + 1) +" may be missing a semicolon.");
+        }
+    }
 }
 

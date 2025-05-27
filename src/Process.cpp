@@ -66,7 +66,8 @@ Process::Process(vector<Group *> groups, string inputFileName) : groups(std::mov
         Logger::log(LogLevel::INFO, "All brackets are balanced.");
     }
 
-    // TODO: check for semicolons
+    // Check for the presence of a semicolon at the end of non-control lines.
+    checkSemicolons(lines);
 
     Logger::log(LogLevel::INFO, "Processing words...");
     for (const auto& line : lines) {
