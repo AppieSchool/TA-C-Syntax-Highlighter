@@ -123,6 +123,25 @@ bool isControlStructure(const std::vector<std::string> &line) {
     return false;
 }
 
+bool endsWithSemicolonOrBlock(const std::vector<std::string>& line) {
+    const std::string& lastToken = line.back();
+
+    // Check for list initialization without semicolon:
+    // look for closing curly brace without semicolon after
+    if (lastToken == "}") {
+        if (line.size() >= 2 && line[line.size() - 2] != ";") {
+            return false; // `... }` but without `;`
+        }
+        return true;
+    }
+
+    if (lastToken == ";" || lastToken == "{") {
+        return true;
+    }
+
+    return false;
+}
+
 void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
     for (size_t lineNum = 0; lineNum < lines.size(); ++lineNum) {
         const auto& line = lines[lineNum];
@@ -132,7 +151,7 @@ void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
         if (isControlStructure(line)) continue;
         const std::string& lastToken = line.back();
         // Check the last element of a string
-        if (lastToken != ";" && lastToken != "{" && lastToken != "}") {
+        if (!endsWithSemicolonOrBlock(line)) {
             Logger::log(LogLevel::WARNING, "Warning: line " + std::to_string(lineNum + 1) +" may be missing a semicolon.");
         }
     }
@@ -140,7 +159,6 @@ void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
 
 std::string getTrailingDigits(const std::string& input) {
     std::string result;
-
     // Go from the end of the line to the beginning
     for (int i = static_cast<int>(input.size()) - 1; i >= 0; --i) {
         if (std::isdigit(input[i])) {
@@ -149,7 +167,6 @@ std::string getTrailingDigits(const std::string& input) {
             break;  // Stop if you encounter a non-digit
         }
     }
-
     return result;
 }
 
