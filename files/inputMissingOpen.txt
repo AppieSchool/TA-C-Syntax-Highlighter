@@ -2,7 +2,7 @@
 
 int main()
     if (true) {
-        std::cout << "Inside if";
+        std::cout << "inside";
     }
     return 0;
 }

@@ -68,12 +68,12 @@ int main(int argc, char const* argv[])
             //vector<Group*> groups = conf_pair.first;
             retVal = conf_pair.second;
         }
-        //Process process(groups, "input.txt");
+        Process process(groups, "input.txt");
         //Process process(groups, "inputAutoComp1.txt");
         //Process process(groups, "inputMissingClose.txt");
         //Process process(groups, "inputMissingOpen.txt");
+        //Process process(groups, "inputSemicolon.txt");
         //Process process(groups, "inputNewConf.txt");
-        Process process(groups, "inputSemicolon.txt");
     }
     catch(const std::bad_alloc &exception)
     {
