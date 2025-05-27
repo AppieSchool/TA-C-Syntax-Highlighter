@@ -37,6 +37,10 @@ void Group::setFontWeight(int fontWeight) {
     Group::fontWeight = fontWeight;
 }
 
+string Group::get_display_name() {
+    return display_name;
+}
+
 string Group::toHTML_String() const {
     /*
     <div class="groupItem" style="color:#ff7f50; font-weight:900;">Group 0: C++ Keywords</div>

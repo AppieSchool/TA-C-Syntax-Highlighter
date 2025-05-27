@@ -27,6 +27,8 @@ public:
     int getFontWeight() const;
     void setFontWeight(int fontWeight);
 
+    [[nodiscard]] string get_display_name();
+
     [[nodiscard]] string toHTML_String() const;
 };
 

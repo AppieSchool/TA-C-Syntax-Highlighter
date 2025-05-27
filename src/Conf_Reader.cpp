@@ -6,6 +6,84 @@
 
 #include <fstream>
 #include <stack>
+#include <unordered_set>
+
+
+void get_unique_display_name(const vector<Group*>& existing_groups, string& suggested_name) {
+    std::unordered_set<string> existing_names;
+    for (const auto& group : existing_groups) {
+        if (group) {
+            existing_names.insert(group->get_display_name());
+        }
+    }
+
+    // Get the numeric suffix and base
+    string digits = getTrailingDigits(suggested_name);
+    string base = suggested_name.substr(0, suggested_name.size() - digits.size());
+
+    // Scan existing names for matches with this database
+    int max_suffix = -1;
+    bool base_taken = false;
+
+    for (const auto& name : existing_names) {
+        string existing_digits = getTrailingDigits(name);
+        string existing_base = name.substr(0, name.size() - existing_digits.size());
+
+        if (existing_base == base) {
+            if (existing_digits.empty()) {
+                base_taken = true;
+            } else {
+                try {
+                    int num = std::stoi(existing_digits);
+                    if (num > max_suffix) {
+                        max_suffix = num;
+                    }
+                } catch (...) {
+                    // not a number - ignore
+                }
+            }
+        }
+    }
+
+    if (!base_taken && max_suffix == -1) {
+        suggested_name = base;
+        return;
+    }
+
+    // Generate the next name
+    int next_number = max_suffix + 1;
+    suggested_name = base + std::to_string(next_number);
+}
+
+pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration &conf, int &count,
+    const std::vector<Group *> &existing_groups) {
+    // Declaring output data
+    std::vector<Group *> groups;
+    int retVal = 0;
+    // Trying to find the main description of the file
+    // To get the number of groups
+    const int n_groups = conf["General"]["NumberOfGroups"].as_int_or_die();
+    // note: we can add a lot of other things here, from the background color to the style of the document text
+
+    // For each group number try to read it
+    for(int i = 0; i < n_groups; i++){
+        string group_name = "groep" + to_string(i);
+        string RE = conf[group_name]["RE"].as_string_or_die();
+        string color = conf[group_name]["color"].as_string_or_die();
+        string display_name = conf[group_name]["displayName"].as_string_or_default("Custom group");
+        get_unique_display_name(existing_groups, display_name);
+        const int font_weight = conf[group_name]["fontWeight"].as_int_or_die();
+        if (!are_brackets_balanced(RE)) {
+            cerr << "Error: unbalanced brackets in RE for group: " << group_name << endl;
+            retVal = 1;
+            continue;
+        }
+        auto* group = new Group("groep"+std::to_string(count), display_name, RE, color, font_weight);
+        groups.push_back(group);
+        count++;
+    }
+    return {groups, retVal};
+}
 
 pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration &conf, int &count) {
     // Declaring output data
@@ -21,7 +99,7 @@ pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration 
         string group_name = "groep" + to_string(i);
         string RE = conf[group_name]["RE"].as_string_or_die();
         string color = conf[group_name]["color"].as_string_or_die();
-        string display_name = conf[group_name]["displayName"].as_string_or_default("Custom group");
+        string display_name = conf[group_name]["displayName"].as_string_or_default("Custom group") + " [Main]";
         const int font_weight = conf[group_name]["fontWeight"].as_int_or_die();
         if (!are_brackets_balanced(RE)) {
             cerr << "Error: unbalanced brackets in RE for group: " << group_name << endl;
@@ -35,9 +113,8 @@ pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration 
     return {groups, retVal};
 }
 
-
 void Conf_Reader::merge_conf(const std::string &first_file, const std::string &second_file,
-    const string &new_file_name) {
+                             const string &new_file_name) {
     // trying to read the first configuration
     ini::Configuration first_conf;
     try

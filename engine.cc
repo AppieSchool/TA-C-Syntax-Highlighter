@@ -35,8 +35,10 @@ int main(int argc, char const* argv[])
         }
         int count = 0;
         vector<Group*> groups;
-        for(const string& fileName : args)
+
+        for(int i = 0; i < args.size(); ++i)
         {
+            const string fileName = args[i];
             ini::Configuration conf;
             try
             {
@@ -55,7 +57,12 @@ int main(int argc, char const* argv[])
                 continue;
             }
             // read the configuration and create groups for processing
-            pair<std::vector<Group *>, int> conf_pair = Conf_Reader::read_conf(conf, count);
+            pair<std::vector<Group *>, int> conf_pair;
+            if (i == args.size()-1) {
+                conf_pair = Conf_Reader::read_conf(conf, count);
+            }else {
+                conf_pair = Conf_Reader::read_conf(conf, count, groups);
+            }
             // break the answer into parts
             groups.insert(groups.end(), conf_pair.first.begin(), conf_pair.first.end());
             //vector<Group*> groups = conf_pair.first;

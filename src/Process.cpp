@@ -90,6 +90,7 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
                         output.addError("Wrong word: " + word + " Did you mean: "  + suggestion + "?");
                     }
                 }
+
             }
 
             if (g) {
