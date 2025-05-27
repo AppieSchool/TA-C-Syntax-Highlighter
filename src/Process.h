@@ -12,6 +12,7 @@ class Process {
 private:
     vector<Group*> groups;
     string regex;
+    int maxEditDistance = 3; // Default value for maximum edit distance
 public:
     Process() = default;
     //Process(vector<Group*> groups, string inputFileName);
