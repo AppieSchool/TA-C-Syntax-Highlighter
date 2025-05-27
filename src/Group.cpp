@@ -44,7 +44,6 @@ string Group::toHTML_String() const {
     <div class="groupItem" style="color:#4169e1; font-weight:900;">Group 2: C++ Containers</div>
     <div class="groupItem" style="color:#3cb371; font-weight:900;">Group 3: RegEx Pattern</div>
     */
-
     string output = R"(<div class="groupItem" style="color:)" + this->getColor() + ";";
     const string font_weight = std::to_string(this->getFontWeight());
     output += R"(; font-weight:)" + font_weight + R"(;">)";

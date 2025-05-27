@@ -44,6 +44,11 @@ bool isControlStructure(const std::vector<std::string>& line);
  */
 void checkSemicolons(const std::vector<std::vector<std::string>>& lines);
 
+/** Function to return the number that is at the end of a string.
+ *
+ * @param input The string from which the number is obtained
+ * @return The number (as a string) that was at the end of the given string
+ */
 std::string getTrailingDigits(const std::string& input);
 
 
