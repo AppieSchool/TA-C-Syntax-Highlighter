@@ -24,6 +24,7 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
     HTMLWriter output("output.html", this->groups);
     Logger::log(LogLevel::INFO, "Initialized HTMLWriter for output.html");
 
+    // INFO:: DFA use
     vector<DFA> dfas;
     Logger::log(LogLevel::INFO, "Processing groups...");
     for (auto group : getGroups()) {
@@ -35,6 +36,9 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
         }
 
         Logger::log(LogLevel::INFO, "Converting regex to minimalized DFA for group: " + group->getName());
+        // INFO:: DFA use
+        // INFO:: ENFA use
+        // INFO:: RE use
         RE GroupRegex(group->getRegex());
         ENFA GroupNFA = GroupRegex.toENFA();
         DFA GroupDFA = GroupNFA.toDFA();
@@ -77,8 +81,9 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
 
             for (size_t index = 0; index < dfas.size(); index++) {
                 g = getGroups()[index];
-
                 Logger::log(LogLevel::DEBUG, "Checking if DFA accepts word: " + word + " for group: " + g->getName());
+
+                // INFO:: DFA use
                 if (dfas[index].accepts(word)) {
                     Logger::log(LogLevel::INFO, "Word: '" + word + "' accepted by group: " + g->getName());
                     isAccepted = true;

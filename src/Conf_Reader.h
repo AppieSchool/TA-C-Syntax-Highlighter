@@ -7,7 +7,6 @@
 #include <vector>
 #include "Group.h"
 #include "ini_configuration.h"
-#include "Utils/functions.h"
 
 class Conf_Reader {
     public:
@@ -18,13 +17,13 @@ class Conf_Reader {
      * Groups are CREATED IN MEMORY and MUST be deleted.
      *
      * @param conf  The configuration that will be read.
-     * @param count
-     * @param existing_groups
+     * @param count number group for recording
+     * @param existing_groups list of groups to check unique name
      * @return A pair where the first element is a vector of all groups that were found, and the second element is the error value, if it was detected.
      */
     static pair<std::vector<Group *>, int> read_conf(const ini::Configuration &conf, int &count, const std::vector<Group *> &existing_groups);
-
     static pair<std::vector<Group *>, int> read_conf(const ini::Configuration &conf, int &count);
+
     /** Extending the merge_conf(std::vector<Group *> &, std::vector<Group *> &, std::string) method to work starting from configuration files.
      *
      * @param first_file The name of the first configuration file.

@@ -3,10 +3,10 @@
 //
 
 #include "Conf_Reader.h"
-
 #include <fstream>
 #include <stack>
 #include <unordered_set>
+#include "functions.h"
 
 
 void get_unique_display_name(const vector<Group*>& existing_groups, string& suggested_name) {

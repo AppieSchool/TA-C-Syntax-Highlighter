@@ -15,7 +15,6 @@ private:
     int maxEditDistance = 3; // Default value for maximum edit distance
 public:
     Process() = default;
-    //Process(vector<Group*> groups, string inputFileName);
 
     Process(vector<Group *> groups, const string &inputFileName);
 
