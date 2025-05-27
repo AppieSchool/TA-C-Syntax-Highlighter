@@ -33,6 +33,8 @@ int main(int argc, char const* argv[])
                 return 1;
             }
         }
+        int count = 0;
+        vector<Group*> groups;
         for(const string& fileName : args)
         {
             ini::Configuration conf;
@@ -53,13 +55,13 @@ int main(int argc, char const* argv[])
                 continue;
             }
             // read the configuration and create groups for processing
-            pair<std::vector<Group *>, int> conf_pair = Conf_Reader::read_conf(conf);
+            pair<std::vector<Group *>, int> conf_pair = Conf_Reader::read_conf(conf, count);
             // break the answer into parts
-            vector<Group*> groups = conf_pair.first;
+            groups.insert(groups.end(), conf_pair.first.begin(), conf_pair.first.end());
+            //vector<Group*> groups = conf_pair.first;
             retVal = conf_pair.second;
-
-            Process process(groups, "input.txt");
         }
+        Process process(groups, "input.txt");
     }
     catch(const std::bad_alloc &exception)
     {

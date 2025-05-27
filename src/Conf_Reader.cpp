@@ -7,7 +7,7 @@
 #include <fstream>
 #include <stack>
 
-pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration &conf) {
+pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration &conf, int &count) {
     // Declaring output data
     std::vector<Group *> groups;
     int retVal = 0;
@@ -28,8 +28,9 @@ pair<std::vector<Group *>, int> Conf_Reader::read_conf(const ini::Configuration 
             retVal = 1;
             continue;
         }
-        auto* group = new Group(group_name, display_name, RE, color, font_weight);
+        auto* group = new Group("groep"+std::to_string(count), display_name, RE, color, font_weight);
         groups.push_back(group);
+        count++;
     }
     return {groups, retVal};
 }
@@ -79,8 +80,9 @@ void Conf_Reader::merge_conf(const std::string &first_file, const std::string &s
 
 void Conf_Reader::merge_conf(const ini::Configuration &first_conf, const ini::Configuration &second_conf,
                              const string &new_file_name) {
-    const std::vector<Group *> first_groups = read_conf(first_conf).first;
-    const std::vector<Group *> second_groups = read_conf(second_conf).first;
+    int count = 0;
+    const std::vector<Group *> first_groups = read_conf(first_conf, count).first;
+    const std::vector<Group *> second_groups = read_conf(second_conf, count).first;
 
     // Passing data to a deeper function
     merge_conf(first_groups, second_groups, new_file_name);
