@@ -66,7 +66,7 @@ Process::Process(vector<Group *> groups, const string& inputFileName) : groups(s
     }
 
     // Check for the presence of a semicolon at the end of non-control lines.
-    checkSemicolons(lines);
+    checkSemicolons(lines, output);
 
     Logger::log(LogLevel::INFO, "Processing words...");
     for (const auto& line : lines) {

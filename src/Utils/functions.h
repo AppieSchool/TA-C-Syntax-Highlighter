@@ -5,9 +5,9 @@
 #ifndef ENGINE_FUNCTIONS_H
 #define ENGINE_FUNCTIONS_H
 #include <string>
-#include <stack>
 #include <tuple>
 #include <vector>
+#include "../htmlConverter.h"
 /**
  *  Method-function for checking the balance of brackets in a string.
  * @param str The string that will be checked for brackets
@@ -41,8 +41,9 @@ bool isControlStructure(const std::vector<std::string>& line);
  * Outputs found errors to Logger::log(Log Level::WARNING)
  *
  * @param lines Vector of broken lines into words, without spaces
+ * @param output HTML file where the error will be written
  */
-void checkSemicolons(const std::vector<std::vector<std::string>>& lines);
+void checkSemicolons(const std::vector<std::vector<std::string>>& lines, HTMLWriter &output);
 
 /** Function to return the number that is at the end of a string.
  *

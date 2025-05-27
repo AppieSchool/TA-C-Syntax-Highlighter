@@ -5,13 +5,14 @@
 
 #include <iostream>
 #include <set>
+#include <stack>
 
 #include "Logger.h"
-
+#include "../htmlConverter.h"
 
 bool are_brackets_balanced(const std::string& str) {
     // Creates a stack in which we will store all found brackets
-    std::stack<char> brackets_stack;
+    stack<char> brackets_stack;
     for (char character : str) {
         // If the bracket is opening, then add it to the stack.
         if (character == '(' || character == '{' || character == '[') {
@@ -142,7 +143,7 @@ bool endsWithSemicolonOrBlock(const std::vector<std::string>& line) {
     return false;
 }
 
-void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
+void checkSemicolons(const std::vector<std::vector<std::string>> &lines, HTMLWriter &output) {
     for (size_t lineNum = 0; lineNum < lines.size(); ++lineNum) {
         const auto& line = lines[lineNum];
         // do not check empty lines
@@ -152,7 +153,9 @@ void checkSemicolons(const std::vector<std::vector<std::string>> &lines) {
         const std::string& lastToken = line.back();
         // Check the last element of a string
         if (!endsWithSemicolonOrBlock(line)) {
-            Logger::log(LogLevel::WARNING, "Warning: line " + std::to_string(lineNum + 1) +" may be missing a semicolon.");
+            string err = "Warning: line " + std::to_string(lineNum + 1) +" may be missing a semicolon.";
+            Logger::log(LogLevel::WARNING, err);
+            output.addError(err);
         }
     }
 }
