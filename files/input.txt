@@ -1,5 +1,6 @@
 #include <iostream>
 
 int add(int a, int b) {
+    std::vecto<int> numbers = {a, b};
     return a + b;
 }

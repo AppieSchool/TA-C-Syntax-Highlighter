@@ -1,1 +1,74 @@
-<html><head><title>C++ Code Syntax Highlighting</title><style>body { font-family: Arial, sans-serif; margin: 20px; }h1 { color: #333; text-align: center; }.groupLegend { margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }.groupItem { padding: 5px; font-weight: 500; display: inline-block; margin-right: 10px; }.tooltip { position: relative; display: inline-block; cursor: pointer; }.tooltip .tooltiptext { visibility: hidden; width: 120px; background-color: #6c757d; color: #fff; text-align: center; border-radius: 5px; padding: 5px 0; position: absolute; z-index: 1; bottom: 100%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; }.tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }</style></head><body>#include &lt;iostream&gt; <br><br><span style="color:#ff7f50; font-weight:500;">int</span> <span style="color:#3cb371; font-weight:900;">main</span> () { <br><span style="color:#ff7f50; font-weight:500;">for</span> ( <span style="color:#ff7f50; font-weight:500;">int</span> <span style="color:#3cb371; font-weight:900;">i</span> = 0; <span style="color:#3cb371; font-weight:900;">i</span> &lt; <span style="color:#3cb371; font-weight:900;">10</span> ; i++) { <br>std::cout &lt;&lt; std::to_string(i) &lt;&lt; std::endl ; <br>} <br><span style="color:#4169e1; font-weight:500;">std::vector</span> &lt;int&gt; <span style="color:#3cb371; font-weight:900;">henry</span> = {1, 5}; <br>} <br><h1>C++ Code Syntax Highlighting</h1><p>This page highlights various C++ keywords and types based on predefined groups.</p><div class="groupLegend"><h2>Legend</h2><div class="groupItem" style="color:#ff7f50; font-weight:500;">Group 0: C++ Keywords</div><div class="groupItem" style="color:#6a5acd; font-weight:500;">Group 1: String Types</div><div class="groupItem" style="color:#4169e1; font-weight:500;">Group 2: C++ Containers</div><div class="groupItem" style="color:#3cb371; font-weight:900;">Group 3: Regular Expression Pattern</div></div></body></html>
+
+<html>
+<head>
+    <title>C++ Code Syntax Highlighting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 2px solid #ccc;
+            height: 100vh;
+            height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+        .main {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .console {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 250px;
+                background-color: #ffffff;
+                color: #000000;
+                font-family: monospace;
+                border-top: 2px solid #ccc;
+                padding: 10px 20px;
+                overflow-y: auto;
+                z-index: 1000;
+                transition: background-color 0.3s, color 0.3s;
+            }
+        .groupItem {
+            padding: 5px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar">
+        <h2>Legend</h2>
+        <div class="groupItem" style="color:#FFA500; font-weight:600;">Group 0: Null Keywords0</div>
+        <div class="groupItem" style="color:#d73a49; font-weight:600;">Group 1: Exceptions0</div>
+        <div class="groupItem" style="color:#d73a49; font-weight:600;">Group 2: C++ Keywords [Main]</div>
+        <div class="groupItem" style="color:#0366d6; font-weight:500;">Group 3: String Types [Main]</div>
+        <div class="groupItem" style="color:#005cc5; font-weight:700;">Group 4: Vector [Main]</div>
+        <div class="groupItem" style="color:#22863a; font-weight:900;">Group 5: RegEx Pattern [Main]</div>
+        <div class="groupItem" style="color:#6f42c1; font-weight:500;">Group 6: C++ Containers [Main]</div>
+
+    </div>
+    <div class="main">
+# <span style="color:#22863a; font-weight:900;">include</span> &lt; <span style="color:#22863a; font-weight:900;">iostream</span> &gt; <br><br><span style="color:#d73a49; font-weight:600;">int</span> <span style="color:#22863a; font-weight:900;">add</span> ( <span style="color:#d73a49; font-weight:600;">int</span> <span style="color:#22863a; font-weight:900;">a</span> , <span style="color:#d73a49; font-weight:600;">int</span> <span style="color:#22863a; font-weight:900;">b</span> ) { <br>std::vecto &lt; <span style="color:#d73a49; font-weight:600;">int</span> &gt; <span style="color:#22863a; font-weight:900;">numbers</span> = { <span style="color:#22863a; font-weight:900;">a</span> , <span style="color:#22863a; font-weight:900;">b</span> } ; <br><span style="color:#d73a49; font-weight:600;">return</span> <span style="color:#22863a; font-weight:900;">a</span> + <span style="color:#22863a; font-weight:900;">b</span> ; <br>} <br></div></div>
+            <div class="console">
+                <h2>Output Log</h2>
+                <pre>
+                    <div class="error">Wrong word: std::vecto Did you mean: std::vector?</div><br>
+                </pre>
+            </div>
+            </body></html>
+            
